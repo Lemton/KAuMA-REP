@@ -13,20 +13,35 @@ class PolynomialHandler:
         
         block = bytearray(16)
 
-        # Umwandlung der Koeffizienten in Little-Endian-Reihenfolge
         for coeff in coefficients:
             if coeff < 0 or coeff >= 128:
                 raise ValueError("Koeffizient muss im Bereich [0, 127] sein.")
             
-            # Setze den Koeffizienten auf die richtige Position im 16-Byte-Block
-            # coeff gibt die Position des Bits an (Polynompotenzen)
             byte_pos = coeff // 8  # Position im Bytearray
             bit_pos = coeff % 8    # Position im Byte
 
-            # Setze das Bit an der entsprechenden Position (Little Endian)
+            # (Little Endian)
             block[byte_pos] |= (1 << bit_pos)
 
-        # Den 16-Byte-Block in Base64 kodieren und zurückgeben
         block_base64 = base64.b64encode(block).decode('utf-8')
 
         return {"block": block_base64}
+
+    def block2poly(arguments):
+        block_base64 = arguments.get("block", "")
+
+        block = base64.b64decode(block_base64)
+
+        if len(block) != 16:
+            raise ValueError("Der Block muss genau 16 Bytes (128 Bit) lang sein.")
+        
+        coefficients = []
+
+
+        for byte_index, byte_value in enumerate(block):
+            for bit_pos in range(8):
+                if byte_value & (1 << bit_pos):
+                    coefficient = byte_index * 8 + bit_pos
+                    coefficients.append(coefficient)
+
+        return {"coefficients": coefficients}

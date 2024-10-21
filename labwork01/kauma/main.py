@@ -7,7 +7,8 @@ from handlers.polynomial import PolynomialHandler
 ACTION_MAP = {
     "add_numbers": ArithmeticHandler.add_numbers,
     "subtract_numbers": ArithmeticHandler.subtract_numbers,
-    "poly2block": PolynomialHandler.poly2block
+    "poly2block": PolynomialHandler.poly2block,
+    "block2poly" : PolynomialHandler.block2poly
 }
 
 def process_testcase(action, arguments):
