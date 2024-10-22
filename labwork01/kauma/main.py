@@ -4,13 +4,15 @@ import json
 import sys
 from handlers.arithmetic import ArithmeticHandler
 from handlers.polynomial import PolynomialHandler
+from handlers.GaloisField128 import GaloisField128Handler
 
 
 ACTION_MAP = {
     "add_numbers": ArithmeticHandler.add_numbers,
     "subtract_numbers": ArithmeticHandler.subtract_numbers,
     "poly2block": PolynomialHandler.poly2block,
-    "block2poly" : PolynomialHandler.block2poly
+    "block2poly" : PolynomialHandler.block2poly,
+    "gfmul" : GaloisField128Handler.gfmul
 }
 
 def process_testcase(action, arguments):
@@ -33,7 +35,6 @@ def main(input_file):
         for testcase_id, testcase in data["testcases"].items():
             action = testcase.get("action")
             arguments = testcase.get("arguments", {})
-
             try:
                 result = process_testcase(action, arguments)
                 responses[testcase_id] = result

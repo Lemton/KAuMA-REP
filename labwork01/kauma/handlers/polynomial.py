@@ -5,12 +5,7 @@ class PolynomialHandler:
     
     @staticmethod
     def poly2block(arguments):
-        coefficients = arguments.get("coefficients", [])
-        semantic = arguments.get("semantic", "")
-
-        if semantic != "xex":
-            raise ValueError(f"Unbekannte Semantik: {semantic}")
-        
+        coefficients = arguments.get("coefficients", [])      
         block = bytearray(16)
 
         for coeff in coefficients:
@@ -22,16 +17,15 @@ class PolynomialHandler:
 
             # (Little Endian)
             block[byte_pos] |= (1 << bit_pos)
-
         block_base64 = base64.b64encode(block).decode('utf-8')
 
         return {"block": block_base64}
 
     def block2poly(arguments):
         block_base64 = arguments.get("block", "")
-
+        
         block = base64.b64decode(block_base64)
-
+        
         if len(block) != 16:
             raise ValueError("Der Block muss genau 16 Bytes (128 Bit) lang sein.")
         
