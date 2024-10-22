@@ -27,8 +27,6 @@ class GaloisField128Handler:
     
     @staticmethod
     def gfmul(arguments):
-        
-        print(arguments)
 
         block_a_base64 = arguments.get("a")
         block_b_base64 = arguments.get("b")
