@@ -10,6 +10,6 @@ class ArithmeticHandler:
     def subtract_numbers(arguments):
         number1 = arguments.get("number1", 0)
         number2 = arguments.get("number2", 0)
-        return {"differnce": number1 - number2}
+        return {"difference": number1 - number2}
     
     
