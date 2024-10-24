@@ -37,5 +37,10 @@ class PolynomialHandler:
                 if byte_value & (1 << bit_pos):
                     coefficient = byte_index * 8 + bit_pos
                     coefficients.append(coefficient)
+        
+        for coeff in coefficients:
+            if coeff < 0 or coeff >= 128:
+                raise ValueError("Koeffizient muss im Bereich [0, 127] sein.")
+            
 
         return {"coefficients": coefficients}
