@@ -25,7 +25,7 @@ class PolynomialHandler:
         block_base64 = arguments.get("block", "")
         
         block = base64.b64decode(block_base64)
-        
+
         if len(block) != 16:
             raise ValueError("Der Block muss genau 16 Bytes (128 Bit) lang sein.")
         
