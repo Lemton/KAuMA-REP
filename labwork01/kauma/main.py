@@ -5,6 +5,7 @@ import sys
 from handlers.arithmetic import ArithmeticHandler
 from handlers.polynomial import PolynomialHandler
 from handlers.GaloisField128 import GaloisField128Handler
+from handlers.sea128 import SEA128Handler
 
 
 ACTION_MAP = {
@@ -12,7 +13,8 @@ ACTION_MAP = {
     "subtract_numbers": ArithmeticHandler.subtract_numbers,
     "poly2block": PolynomialHandler.poly2block,
     "block2poly" : PolynomialHandler.block2poly,
-    "gfmul" : GaloisField128Handler.gfmul
+    "gfmul" : GaloisField128Handler.gfmul,
+    "sea128" : SEA128Handler.sea128 
 }
 
 def process_testcase(action, arguments):
