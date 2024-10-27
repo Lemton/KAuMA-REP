@@ -25,37 +25,34 @@ class SEA128Handler:
         return bytes(a ^ b for a, b in zip(data, SEA128Handler.COFFEE_CONSTANT))
 
     @staticmethod
-    def sea128encrypt(arguments):
-        
-        key = base64.b64decode(arguments['key'])
-        plaintext = base64.b64decode(arguments['input'])
-        
+    def sea128encrypt(key, plaintext):
+
         encrypted = SEA128Handler.aes128_encrypt(key, plaintext)
-        
+
         sea_encrypted = SEA128Handler.xor_with_coffee_constant(encrypted)
         
-        return base64.b64encode(sea_encrypted).decode('utf-8')
+        return sea_encrypted
 
     @staticmethod	
-    def sea128decrypt(arguments):
-        
-        key = base64.b64decode(arguments['key'])
-        ciphertext = base64.b64decode(arguments['input'])
+    def sea128decrypt(key, ciphertext):
         
         decrypted_xored = SEA128Handler.xor_with_coffee_constant(ciphertext)
         
-        decrypted = SEA128Handler.aes128_decrypt(key, decrypted_xored)
+        sea_decrypted = SEA128Handler.aes128_decrypt(key, decrypted_xored)
         
-        return base64.b64encode(decrypted).decode('utf-8')
+        return sea_decrypted
 
     def sea128(arguments):
+        key = base64.b64decode(arguments['key'])
+        input = base64.b64decode(arguments['input'])
         if arguments['mode'] == 'encrypt':
-            return {"output": SEA128Handler.sea128encrypt(arguments)}
+            output = base64.b64encode(SEA128Handler.sea128encrypt(key, input)).decode('utf-8')
+            return {"output": output}
         elif arguments['mode'] == 'decrypt':
-            return {"output": SEA128Handler.sea128decrypt(arguments)}
+            output = base64.b64encode(SEA128Handler.sea128decrypt(key, input)).decode('utf-8')
+            return {"output": output}
         else:
             raise ValueError("Invalid mode, must be 'encrypt' or 'decrypt'.")
-
 
 
 
