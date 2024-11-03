@@ -2,9 +2,11 @@
 
 import json
 import sys
+import base64 
+from utils.conversions import poly2block, block2poly
+from handlers.gfmul import gfmul
+from field_element import FieldElement  
 from handlers.arithmetic import ArithmeticHandler
-from handlers.polynomial import PolynomialHandler
-from handlers.GaloisField128 import GaloisField128Handler
 from handlers.sea128 import SEA128Handler
 from handlers.fde import FDEHandler
 
@@ -12,11 +14,11 @@ from handlers.fde import FDEHandler
 ACTION_MAP = {
     "add_numbers": ArithmeticHandler.add_numbers,
     "subtract_numbers": ArithmeticHandler.subtract_numbers,
-    "poly2block": PolynomialHandler.poly2block,
-    "block2poly" : PolynomialHandler.block2poly,
-    "gfmul" : GaloisField128Handler.gfmul,
-    "sea128" : SEA128Handler.sea128,
-    "xex": FDEHandler.xex 
+    "poly2block": poly2block,
+    "block2poly": block2poly,
+    "gfmul": gfmul,
+    "sea128": SEA128Handler.sea128,
+    "xex": FDEHandler.xex
 }
 
 def process_testcase(action, arguments):
@@ -30,9 +32,6 @@ def main(input_file):
     with open(input_file, 'r') as file:
         data = json.load(file)
     
-    #print(f"Geladene Daten: {data}")
-
-    
     if "testcases" in data:
         responses = {}
 
@@ -41,7 +40,13 @@ def main(input_file):
             arguments = testcase.get("arguments", {})
             try:
                 result = process_testcase(action, arguments)
+
+                # Falls der resultierende Wert ein FieldElement ist, konvertiere ihn in einen Base64-Block
+                if isinstance(result, FieldElement):
+                    result = {"product": base64.b64encode(result.to_bytes()).decode('utf-8')}
+                    
                 responses[testcase_id] = result
+
             except ValueError as e:
                 print(f"Fehler bei Testcase {testcase_id}: {e}", file=sys.stderr)
 
@@ -52,11 +57,15 @@ def main(input_file):
 
         try:
             output = process_testcase(action, arguments)
+
+            # Falls der resultierende Wert ein FieldElement ist, konvertiere ihn in einen Base64-Block
+            if isinstance(output, FieldElement):
+                output = {"product": base64.b64encode(output.to_bytes()).decode('utf-8')}
+
         except ValueError as e:
             print(f"Fehler bei dem Testcase: {e}", file=sys.stderr)
             sys.exit(1)
 
-    
     print(json.dumps(output, indent=4))
 
 if __name__ == "__main__":

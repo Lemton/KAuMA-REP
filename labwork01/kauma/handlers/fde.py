@@ -1,6 +1,6 @@
 import base64
 from handlers.sea128 import SEA128Handler
-from handlers.GaloisField128 import GaloisField128Handler
+from handlers.gfmul import gfmul
 
 
 
@@ -47,7 +47,7 @@ class FDEHandler:
             
             
             iv = int.from_bytes(iv_bytes, byteorder='little')
-            iv = GaloisField128Handler.galois_multiplication(iv, 2)
+           # iv = GaloisField128Handler.galois_multiplication(iv, 2)
             iv_bytes = iv.to_bytes(length=16, byteorder='little')    
 
         CipherBlocks = base64.b64encode(CipherBlocks).decode('utf-8')
