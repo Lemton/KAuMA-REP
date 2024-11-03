@@ -25,7 +25,8 @@ def gfmul(arguments):
     result_block = block_a * block_b
 
     if semantic == "gcm":
-        result_bytes = reverse_bit_order(result_block.to_bytes(byteorder='big'))
+        result_bytes = reverse_bit_order(result_block.to_bytes(byteorder='little'))
+
     elif semantic == "xex":
         result_bytes = result_block.to_bytes(byteorder='little')   
     else:
@@ -34,3 +35,15 @@ def gfmul(arguments):
     result_block_base64 = encode_base64(result_bytes)
 
     return {"product": result_block_base64}
+
+
+def calculate_galois_index(i, j, semantic):
+    """Berechnet die Galois-Feld-Position basierend auf der Semantik."""
+    if semantic == "gcm":
+        # GCM-Mapping: alpha^(8 * i + 7 - j)
+        return 8 * i + (7 - j)
+    elif semantic == "xex":
+        # XEX-Mapping: alpha^(8 * i + j)
+        return 8 * i + j
+    else:
+        raise ValueError("Unbekannte Semantik: Muss 'gcm' oder 'xex' sein.")
