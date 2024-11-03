@@ -55,7 +55,12 @@ def block2poly(arguments):
 
     return {"coefficients": coefficients}
 
-
+def reverse_bit_order(byte_array):
+    reversed_bytes = bytearray()
+    for byte in byte_array:
+        reversed_byte = int('{:08b}'.format(byte)[::-1], 2)
+        reversed_bytes.append(reversed_byte)
+    return reversed_bytes
 
 
 
