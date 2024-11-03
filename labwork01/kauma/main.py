@@ -7,9 +7,11 @@ from utils.conversions import poly2block, block2poly
 from handlers.gfmul import gfmul
 from field_element import FieldElement  
 from handlers.arithmetic import ArithmeticHandler
-from handlers.sea128 import SEA128Handler
+from handlers.sea128 import *
 from handlers.fde import FDEHandler
 
+sea128 = SEA128Handler()
+xex = FDEHandler()
 
 ACTION_MAP = {
     "add_numbers": ArithmeticHandler.add_numbers,
@@ -17,8 +19,8 @@ ACTION_MAP = {
     "poly2block": poly2block,
     "block2poly": block2poly,
     "gfmul": gfmul,
-    "sea128": SEA128Handler.sea128,
-    "xex": FDEHandler.xex
+    "sea128": sea128.sea128,
+    "xex": xex.xex
 }
 
 def process_testcase(action, arguments):

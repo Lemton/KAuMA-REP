@@ -40,3 +40,17 @@ def block2poly(arguments):
         
 
     return {"coefficients": coefficients}
+
+
+
+
+
+
+def xor_bytes(data1, data2):
+    return bytes(a ^ b for a,b in zip(data1, data2) )
+
+def encode_base64(data):
+    return base64.b64encode(data).decode('utf-8')
+
+def decode_base64(data):
+    return base64.b64decode(data)

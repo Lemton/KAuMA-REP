@@ -5,6 +5,18 @@ class FieldElement:
     def __init__(self, value):
         self.value = value % self.MODULO
 
+    def __xor__(self, other):
+        
+        if isinstance(other, FieldElement):
+            new_value = self.value ^ other.value
+        elif isinstance(other, int):
+            new_value = self.value ^ other
+        else:
+            raise TypeError("Unsupported type for XOR operation")
+
+        return FieldElement(new_value % self.MODULO)
+
+
     def __mul__(self, other):
         if isinstance(other, FieldElement):
             Y = other.value
