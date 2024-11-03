@@ -25,7 +25,7 @@ def gfmul(arguments):
     result_block = block_a * block_b
 
     if semantic == "gcm":
-        result_bytes = reverse_bit_order(result_block.to_bytes(byteorder='little'))
+        result_bytes = result_block.to_bytes(byteorder='big')
 
     elif semantic == "xex":
         result_bytes = result_block.to_bytes(byteorder='little')   
