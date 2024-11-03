@@ -1,6 +1,6 @@
 from utils.conversions import encode_base64, decode_base64, xor_bytes
 from utils.crypto import aes128_encrypt, aes128_decrypt  
-import base64
+
 
 class SEA128Handler:
     def __init__(self):
