@@ -1,119 +1,83 @@
-import base64
-from handlers.sea128 import SEA128Handler
-from handlers.GaloisField128 import GaloisField128Handler
-
-
+from handlers.sea128 import *
+from utils.conversions import encode_base64, decode_base64, xor_bytes
+from field_element import FieldElement
 
 class FDEHandler:
-    
-    @staticmethod
-    def xex(arguments):
+    def __init__(self):
+        self.sea128 = SEA128Handler()
+        self.galois_multiplier = FieldElement(2)  # Multiplikator für Galois-Feld
 
+    def xex(self, arguments):
         if arguments['mode'] == 'encrypt':
-            return {"output": FDEHandler.xexencrypt(arguments)}
+            return {"output": self.xex_encrypt(arguments)}
         elif arguments['mode'] == 'decrypt':
-            return {"output": FDEHandler.xexdecrypt(arguments)}
+            return {"output": self.xex_decrypt(arguments)}
         else:
             raise ValueError("Invalid mode, must be 'encrypt' or 'decrypt'.")
 
-    def xexencrypt(arguments):
-        
-        tweak = arguments.get('tweak')
-        key1n2 = arguments.get('key')
-        plaintext = arguments.get('input')
-    
-        tweakdecode = base64.b64decode(tweak)
+    def xex_encrypt(self, arguments):
+        tweak_base64 = arguments.get('tweak')
+        concatenated_keys_base64 = arguments.get('key')
+        plaintext_base64 = arguments.get('input')
 
-        key1, key2 = FDEHandler.decodeKey_Split(key1n2)    
-        tocipherblocks = FDEHandler.decodeInput_Split(plaintext) 
-        iv_bytes = SEA128Handler.sea128encrypt(key2, tweakdecode)
-        CipherBlocks = bytearray()
+        tweak = decode_base64(tweak_base64)
+        key1, key2 = self.split_keys(concatenated_keys_base64)
+        plaintext_blocks = self.split_input_into_blocks(plaintext_base64)
 
-        for block in tocipherblocks:
-            block1 = bytearray()
-            for i in range(0,16):
-                block1.append(block[i] ^ iv_bytes[i])
-
-            block1 = bytes(block1)
-            
-            block1_SEA = SEA128Handler.sea128encrypt(key1, block1)
-
-            block1_Ciph = bytearray()
-            for i in range(0,16):
-                block1_Ciph.append(block1_SEA[i] ^ iv_bytes[i])
-
-            CipherBlocks.extend(block1_Ciph)
-            
-            
-            
-            iv = int.from_bytes(iv_bytes, byteorder='little')
-            iv = GaloisField128Handler.galois_multiplication(iv, 2)
-            iv_bytes = iv.to_bytes(length=16, byteorder='little')    
-
-        CipherBlocks = base64.b64encode(CipherBlocks).decode('utf-8')
-        output = ''.join(CipherBlocks)
-        
-        return output
-
-    def xexdecrypt(arguments):
-        
-        tweak = arguments.get('tweak')
-        key1n2 = arguments.get('key')
-        plaintext = arguments.get('input')
-    
-        tweakdecode = base64.b64decode(tweak)
-
-        key1, key2 = FDEHandler.decodeKey_Split(key1n2)    
-        tocipherblocks = FDEHandler.decodeInput_Split(plaintext) 
-        iv_bytes = SEA128Handler.sea128encrypt(key2, tweakdecode)
-        CipherBlocks = bytearray()
-
-        for block in tocipherblocks:
-            block1 = bytearray()
-            for i in range(0,16):
-                block1.append(block[i] ^ iv_bytes[i])
-
-            block1 = bytes(block1)
-            
-            block1_SEA = SEA128Handler.sea128decrypt(key1, block1)
-
-            block1_Ciph = bytearray()
-            for i in range(0,16):
-                block1_Ciph.append(block1_SEA[i] ^ iv_bytes[i])
-
-            CipherBlocks.extend(block1_Ciph)
-            
-            
-            
-            iv = int.from_bytes(iv_bytes, byteorder='little')
-            iv = GaloisField128Handler.galois_multiplication(iv, 2)
-            iv_bytes = iv.to_bytes(length=16, byteorder='little')    
-
-        CipherBlocks = base64.b64encode(CipherBlocks).decode('utf-8')
-        output = ''.join(CipherBlocks)
-        
-        return output
-    
-    def decodeKey_Split(keystr):
-
-        key = base64.b64decode(keystr)
+        iv_encrypted = self.sea128.encrypt(key2, tweak)
+        encrypted_blocks = bytearray()
 
         
-        if len(key) != 32:
-            raise ValueError("Der dekodierte Schlüssel ist nicht genau 256 Bit groß.")
-        
-        key1 = key[:16]
-        key2 = key[16:]
+        iv = FieldElement(int.from_bytes(iv_encrypted, byteorder='little'))
 
-        return key1,key2
-    
-    def decodeInput_Split(input):
+        for plaintext_block in plaintext_blocks:
+            
+            xored_block = xor_bytes(plaintext_block, iv.to_bytes())
+            encrypted_block = self.sea128.encrypt(key1, xored_block)
+            final_encrypted_block = xor_bytes(encrypted_block, iv.to_bytes())
+            encrypted_blocks.extend(final_encrypted_block)
+
+            
+            iv *= self.galois_multiplier
+
+        return encode_base64(encrypted_blocks)
+
+    def xex_decrypt(self, arguments):
+        tweak_base64 = arguments.get('tweak')
+        concatenated_keys_base64 = arguments.get('key')
+        ciphertext_base64 = arguments.get('input')
+
+        tweak = decode_base64(tweak_base64)
+        key1, key2 = self.split_keys(concatenated_keys_base64)
+        ciphertext_blocks = self.split_input_into_blocks(ciphertext_base64)
+
+        iv_encrypted = self.sea128.encrypt(key2, tweak)
+        decrypted_blocks = bytearray()
+
+        
+        iv = FieldElement(int.from_bytes(iv_encrypted, byteorder='little'))
+
+        for ciphertext_block in ciphertext_blocks:
+            
+            xored_block = xor_bytes(ciphertext_block, iv.to_bytes())
+            decrypted_block = self.sea128.decrypt(key1, xored_block)
+            final_decrypted_block = xor_bytes(decrypted_block, iv.to_bytes())
+            decrypted_blocks.extend(final_decrypted_block)
+
+            
+            iv *= self.galois_multiplier
+
+        return encode_base64(decrypted_blocks)
+
+    def split_keys(self, concatenated_keys_base64):
+        """Teilt den 256-Bit-Schlüssel in zwei 128-Bit-Schlüssel auf."""
+        concatenated_keys = decode_base64(concatenated_keys_base64)
+        if len(concatenated_keys) != 32:
+            raise ValueError("Der dekodierte Schlüssel muss genau 256 Bit lang sein.")
+        return concatenated_keys[:16], concatenated_keys[16:]
+
+    def split_input_into_blocks(self, input_data_base64):
+        """Teilt die Eingabedaten in 128-Bit-Blöcke auf."""
         block_size = 16
-        inputdecoded = base64.b64decode(input)
-        blocks = [inputdecoded[i:i + block_size]for i in range(0, len(inputdecoded),block_size)]
-
-        return blocks
-
-        
-        
-        
+        input_data = decode_base64(input_data_base64)
+        return [input_data[i:i + block_size] for i in range(0, len(input_data), block_size)]

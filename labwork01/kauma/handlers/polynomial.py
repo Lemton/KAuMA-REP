@@ -44,3 +44,4 @@ class PolynomialHandler:
             
 
         return {"coefficients": coefficients}
+
