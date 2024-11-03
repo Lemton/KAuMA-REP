@@ -9,13 +9,13 @@ class FDEHandler:
 
     def xex(self, arguments):
         if arguments['mode'] == 'encrypt':
-            return {"output": self.xex_encrypt(arguments)}
+            return {"output": self.encrypt(arguments)}
         elif arguments['mode'] == 'decrypt':
-            return {"output": self.xex_decrypt(arguments)}
+            return {"output": self.decrypt(arguments)}
         else:
             raise ValueError("Invalid mode, must be 'encrypt' or 'decrypt'.")
 
-    def xex_encrypt(self, arguments):
+    def encrypt(self, arguments):
         tweak_base64 = arguments.get('tweak')
         concatenated_keys_base64 = arguments.get('key')
         plaintext_base64 = arguments.get('input')
@@ -32,9 +32,9 @@ class FDEHandler:
 
         for plaintext_block in plaintext_blocks:
             
-            xored_block = xor_bytes(plaintext_block, iv.to_bytes())
+            xored_block = xor_bytes(plaintext_block, iv.to_bytes(byteorder='little'))
             encrypted_block = self.sea128.encrypt(key1, xored_block)
-            final_encrypted_block = xor_bytes(encrypted_block, iv.to_bytes())
+            final_encrypted_block = xor_bytes(encrypted_block, iv.to_bytes(byteorder='little'))
             encrypted_blocks.extend(final_encrypted_block)
 
             
@@ -42,7 +42,7 @@ class FDEHandler:
 
         return encode_base64(encrypted_blocks)
 
-    def xex_decrypt(self, arguments):
+    def decrypt(self, arguments):
         tweak_base64 = arguments.get('tweak')
         concatenated_keys_base64 = arguments.get('key')
         ciphertext_base64 = arguments.get('input')
@@ -59,9 +59,9 @@ class FDEHandler:
 
         for ciphertext_block in ciphertext_blocks:
             
-            xored_block = xor_bytes(ciphertext_block, iv.to_bytes())
+            xored_block = xor_bytes(ciphertext_block, iv.to_bytes(byteorder='little'))
             decrypted_block = self.sea128.decrypt(key1, xored_block)
-            final_decrypted_block = xor_bytes(decrypted_block, iv.to_bytes())
+            final_decrypted_block = xor_bytes(decrypted_block, iv.to_bytes(byteorder='little'))
             decrypted_blocks.extend(final_decrypted_block)
 
             

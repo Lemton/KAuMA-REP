@@ -9,8 +9,8 @@ def gfmul(arguments):
     block_b_bytes = decode_base64(block_b_base64)
 
     if semantic == "gcm":
-        block_a = FieldElement(int.from_bytes(block_a_bytes, byteorder='little'))
-        block_b = FieldElement(int.from_bytes(block_b_bytes, byteorder='little'))
+        block_a = FieldElement(int.from_bytes(block_a_bytes, byteorder='big'))
+        block_b = FieldElement(int.from_bytes(block_b_bytes, byteorder='big'))
 
     elif semantic == "xex":
         block_a = FieldElement(int.from_bytes(block_a_bytes, byteorder='little'))
