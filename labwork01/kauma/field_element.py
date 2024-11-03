@@ -58,8 +58,8 @@ class FieldElement:
          return self.value.from_bytes(byteorder = "big", length = 16)
 
 
-    def to_bytes(self):
-         return self.value.to_bytes(16, byteorder = 'little')
+    def to_bytes(self, length = 16, byteorder='big'):
+         return self.value.to_bytes(length, byteorder)
 
     def __eq__(self, other):
         	return ((int(self)-int(other)) % self.MODULO) == 0
