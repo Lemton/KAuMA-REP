@@ -37,6 +37,5 @@ class GCMHandler:
         result = gcm_decrypt(algorithm, nonce, key, ciphertext, ad, tag)
         
         result["plaintext"] = encode_base64(result["plaintext"])
-
-
+        
         return result

@@ -54,12 +54,7 @@ def gcm_encrypt(algorithm, nonce, key, plaintext, ad):
 
     
 
-    return {
-        "ciphertext": b''.join(ciphertext_blocks),
-        "tag": auth_tag,
-        "L": L,
-        "H": authkey
-    }
+    return {"ciphertext": b''.join(ciphertext_blocks),"tag": auth_tag,"L": L,"H": authkey}
 
 
 def gcm_decrypt(algorithm, nonce, key, ciphertext, ad, tag):
@@ -110,11 +105,7 @@ def gcm_decrypt(algorithm, nonce, key, ciphertext, ad, tag):
     
     authentic = computed_tag == tag
 
-    return {
-        "authentic": authentic,
-        "plaintext": b''.join(plaintext_blocks)
-        
-    }
+    return {"authentic": authentic,"plaintext": b''.join(plaintext_blocks)}
 
 def ghash(auth_key, associated_data, ciphertext_blocks, L):
     
