@@ -28,7 +28,7 @@ def gcm_encrypt(algorithm, nonce, key, plaintext, ad):
     y0 = nonce + (1).to_bytes(4, byteorder='big')
 
     
-    plaintext_blocks = [plaintext[i:i + 16] for i in range(0, len(plaintext), 16)]
+    plaintext_blocks = [bytearray(plaintext[i:i + 16]) for i in range(0, len(plaintext), 16)]
     ciphertext_blocks = bytearray()
     
     counter = 2
@@ -38,7 +38,7 @@ def gcm_encrypt(algorithm, nonce, key, plaintext, ad):
         elif algorithm == "aes128":
             y_i = aes128_encrypt(key, nonce + counter.to_bytes(4, byteorder='big'))
         
-        ciphertext_block = bytes([p ^ y for p, y in zip(plaintext_block, y_i)])
+        ciphertext_block = bytearray([p ^ y for p, y in zip(plaintext_block, y_i)])
         ciphertext_blocks.extend(ciphertext_block)
         counter += 1
     
@@ -50,7 +50,7 @@ def gcm_encrypt(algorithm, nonce, key, plaintext, ad):
     elif algorithm == "aes128":
         y0_encrypted = aes128_encrypt(key, y0)
 
-    auth_tag = bytes([y ^ g for y, g in zip(y0_encrypted, ghash_result)])
+    auth_tag = bytearray([y ^ g for y, g in zip(y0_encrypted, ghash_result)])
     
     return {
         "ciphertext": ciphertext_blocks,
@@ -74,7 +74,7 @@ def gcm_decrypt(algorithm, nonce, key, ciphertext, ad, tag):
     y0 = nonce + (1).to_bytes(4, byteorder='big')
 
     
-    ciphertext_blocks = [ciphertext[i:i + 16] for i in range(0, len(ciphertext), 16)]
+    ciphertext_blocks = [bytearray(ciphertext[i:i + 16]) for i in range(0, len(ciphertext), 16)]
     plaintext_blocks = bytearray()
     
     counter = 2
@@ -84,7 +84,7 @@ def gcm_decrypt(algorithm, nonce, key, ciphertext, ad, tag):
         elif algorithm == "aes128":
             y_i = aes128_encrypt(key, nonce + counter.to_bytes(4, byteorder='big'))
         
-        plaintext_block = bytes([c ^ y for c, y in zip(ciphertext_block, y_i)])
+        plaintext_block = bytearray([c ^ y for c, y in zip(ciphertext_block, y_i)])
         plaintext_blocks.extend(plaintext_block)
         counter += 1
 
@@ -96,10 +96,10 @@ def gcm_decrypt(algorithm, nonce, key, ciphertext, ad, tag):
     elif algorithm == "aes128":
         y0_encrypted = aes128_encrypt(key, y0)
 
-    computed_tag = bytes([y ^ g for y, g in zip(y0_encrypted, ghash_result)])
+    computed_tag = bytearray([y ^ g for y, g in zip(y0_encrypted, ghash_result)])
     authentic = computed_tag == tag
 
-    return {"authentic": authentic,"plaintext": plaintext_blocks}
+    return {"authentic": authentic, "plaintext": plaintext_blocks}
 
 
 def ghash(auth_key, associated_data, ciphertext_blocks, L):
@@ -108,16 +108,16 @@ def ghash(auth_key, associated_data, ciphertext_blocks, L):
     
     
     for i in range(0, len(associated_data), 16):
-        block = associated_data[i:i + 16]
-        block = block.ljust(16, b'\x00')
+        block = bytearray(associated_data[i:i + 16])
+        block.extend(b'\x00' * (16 - len(block)))  
         block_fe = FieldElement(int.from_bytes(block, byteorder='big'))
         ghash_result ^= block_fe
         ghash_result = FieldElement(int.from_bytes(gcm_gfmul(ghash_result.to_bytes(16, byteorder='big'), auth_key_bytes), byteorder='big'))
     
     
     for i in range(0, len(ciphertext_blocks), 16):
-        block = ciphertext_blocks[i:i + 16]
-        block = block.ljust(16, b'\x00')
+        block = bytearray(ciphertext_blocks[i:i + 16])
+        block.extend(b'\x00' * (16 - len(block)))  
         block_fe = FieldElement(int.from_bytes(block, byteorder='big'))
         ghash_result ^= block_fe
         ghash_result = FieldElement(int.from_bytes(gcm_gfmul(ghash_result.to_bytes(16, byteorder='big'), auth_key_bytes), byteorder='big'))
