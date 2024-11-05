@@ -6,18 +6,22 @@ import base64
 from utils.conversions import poly2block, block2poly
 from handlers.gfmul import gfmul
 from field_element import FieldElement  
-from handlers.sea128 import *
+from handlers.sea128 import SEA128Handler
 from handlers.fde import FDEHandler
+from handlers.gcm import GCMHandler
 
 sea128 = SEA128Handler()
 xex = FDEHandler()
+gcm = GCMHandler()
 
 ACTION_MAP = {
     "poly2block": poly2block,
     "block2poly": block2poly,
     "gfmul": gfmul,
     "sea128": sea128.sea128,
-    "xex": xex.xex
+    "xex": xex.xex,
+    "gcm_encrypt": gcm.gcm_encrypt_action,
+    "gcm_decrypt": gcm.gcm_decrypt_action
 }
 
 def process_testcase(action, arguments):
