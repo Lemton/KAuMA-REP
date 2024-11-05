@@ -39,7 +39,7 @@ def gcm_encrypt(algorithm, nonce, key, plaintext, ad):
         elif algorithm == "aes128":
             y_i = aes128_encrypt(key, nonce + counter.to_bytes(4, byteorder='big'))
         ciphertext_block = bytes([p ^ y for p, y in zip(plaintext_block, y_i)])
-        ciphertext_blocks.append(ciphertext_block)
+        ciphertext_blocks.extend(ciphertext_block)
         counter += 1
     L = (len(ad) * 8).to_bytes(8, byteorder='big') + (len(b''.join(ciphertext_blocks)) * 8).to_bytes(8, byteorder='big')
 
@@ -53,7 +53,7 @@ def gcm_encrypt(algorithm, nonce, key, plaintext, ad):
     auth_tag = bytes([y ^ g for y, g in zip(y0_encrypted, ghash_result)])
 
     
-
+    
     return {"ciphertext": b''.join(ciphertext_blocks),"tag": auth_tag,"L": L,"H": authkey}
 
 
@@ -99,9 +99,6 @@ def gcm_decrypt(algorithm, nonce, key, ciphertext, ad, tag):
 
     
     computed_tag = bytes([y ^ g for y, g in zip(y0_encrypted, ghash_result)])
-
-    print(tag)
-    print(computed_tag)
     
     authentic = computed_tag == tag
 
