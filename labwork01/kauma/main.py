@@ -9,6 +9,7 @@ from field_element import FieldElement
 from handlers.sea128 import SEA128Handler
 from handlers.fde import FDEHandler
 from handlers.gcm import GCMHandler
+from handlers.padding_attack import padding_oracle
 
 sea128 = SEA128Handler()
 xex = FDEHandler()
@@ -21,7 +22,8 @@ ACTION_MAP = {
     "sea128": sea128.sea128,
     "xex": xex.xex,
     "gcm_encrypt": gcm.gcm_encrypt_action,
-    "gcm_decrypt": gcm.gcm_decrypt_action
+    "gcm_decrypt": gcm.gcm_decrypt_action,
+    "padding_oracle" : padding_oracle
 }
 
 def process_testcase(action, arguments):
