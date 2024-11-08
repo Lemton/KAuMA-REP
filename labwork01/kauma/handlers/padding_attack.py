@@ -1,71 +1,104 @@
 import socket
 import struct
-import base64
-from utils.conversions import decode_base64
+from utils.conversions import encode_base64, decode_base64
 
-def padding_oracle(arguments):
-    hostname = arguments.get("hostname")
-    port = arguments.get("port")
-    iv = decode_base64(arguments.get("iv"))
-    ciphertext = decode_base64(arguments.get("ciphertext"))
+BLOCK_SIZE = 16
+TIMEOUT = 10.0
+BATCH_SIZE = 64
 
-    plaintext = padding_oracle_attack(hostname, port, iv, ciphertext)
-    print({"plaintext": base64.b64encode(plaintext).decode()})
+class PaddingOracleClient:
+    def __init__(self, target_host, target_port):
+        self.connection = socket.create_connection((target_host, target_port), timeout=TIMEOUT)
+    
+    def initialize(self, initial_block):
+        if len(initial_block) != BLOCK_SIZE:
+            raise ValueError("Initial block must be exactly 16 bytes")
+        self.connection.sendall(initial_block)
+    
+    def query(self, blocks):
+        try:
+            packed_data = struct.pack('<H', len(blocks)) + b''.join(blocks)
+            self.connection.sendall(packed_data)
+            response = self.connection.recv(len(blocks))
+            if not response:
+                raise ConnectionError("Empty response received from server.")
+            return response
+        except BrokenPipeError:
+            self.close()
+            raise ConnectionError("Connection broken. Ensure the server is running and reachable.")
+    
+    def close(self):
+        self.connection.close()
 
-def connect_to_server(hostname, port, initial_ciphertext, q_blocks):
-    """Connects to the padding oracle server, sends data, and receives responses."""
-    with socket.create_connection((hostname, port)) as sock:
+
+class BlockDecryptor:
+    def __init__(self, cipher_block, previous_block, oracle_client):
+        self.cipher_block = cipher_block
+        self.previous_block = bytearray(previous_block)
+        self.oracle_client = oracle_client
+        self.decrypted_intermediate = bytearray(BLOCK_SIZE)
+        self.decrypted_plaintext = bytearray(BLOCK_SIZE)
+        self.padding_position = BLOCK_SIZE - 1
+        self.padding_value = 1
+
+    def brute_force_candidates(self):
+        return [self.previous_block[:self.padding_position] + bytes([candidate]) + self.previous_block[self.padding_position + 1:] for candidate in range(256)]
+
+    def valid_responses(self, batch):
+        responses = self.oracle_client.query(batch)
+        return [batch[i] for i, result in enumerate(responses) if result == 0x01]
+
+    def resolve_ambiguity(self, candidates):
+        altered_candidates = [c[:self.padding_position - 1] + bytes([c[self.padding_position - 1] ^ 0xFF]) + c[self.padding_position:] for c in candidates]
+        return self.valid_responses(altered_candidates)
+
+    def find_valid_byte(self):
+        while True:
+            for batch_start in range(0, 256, BATCH_SIZE):
+                batch = self.brute_force_candidates()[batch_start: batch_start + BATCH_SIZE]
+                candidates = self.valid_responses(batch)
+                
+                if len(candidates) == 1:
+                    return candidates[0]
+                elif len(candidates) > 1:
+                    resolved_candidates = self.resolve_ambiguity(candidates)
+                    if resolved_candidates:
+                        return resolved_candidates[0]
+
+    def decrypt_block(self):
+        self.oracle_client.initialize(self.cipher_block)
+
+        while self.padding_position >= 0:
+            candidate = self.find_valid_byte()
+            self.decrypted_intermediate[self.padding_position] = candidate[self.padding_position] ^ self.padding_value
+            self.decrypted_plaintext[self.padding_position] = self.decrypted_intermediate[self.padding_position] ^ self.previous_block[self.padding_position]
+            self.padding_position -= 1
+            self.padding_value += 1
+            for i in range(1, self.padding_value):
+                self.previous_block[-i] = self.decrypted_intermediate[-i] ^ self.padding_value
         
-        data_to_send = initial_ciphertext + struct.pack('<H', len(q_blocks)) + b''.join(q_blocks)
-        sock.sendall(data_to_send)
+        return bytes(self.decrypted_plaintext)
 
-        response = sock.recv(len(q_blocks))
-        return response
 
-def padding_oracle_attack(hostname, port, iv, ciphertext):
-    """Performs the padding oracle attack to decrypt the given ciphertext."""
-    block_size = 16  
-    ciphertext_blocks = [iv] + [ciphertext[i:i+block_size] for i in range(0, len(ciphertext), block_size)]
-    decrypted = bytearray()
+def decrypt_ciphertext(arguments):
+    host, port = arguments.get("hostname"), arguments.get("port")
+    iv, ciphertext = decode_base64(arguments.get("iv")), decode_base64(arguments.get("ciphertext"))
 
-    for block_index in range(1, len(ciphertext_blocks)):
-        current_block = ciphertext_blocks[block_index]
-        previous_block = bytearray(ciphertext_blocks[block_index - 1])
-        intermediate = bytearray(block_size)
-        decrypted_block = bytearray(block_size)
+    decrypted_text = bytearray()
+    cipher_blocks = [iv] + [ciphertext[i:i + BLOCK_SIZE] for i in range(0, len(ciphertext), BLOCK_SIZE)]
+    
+    for index in range(1, len(cipher_blocks)):
+        oracle_client = PaddingOracleClient(host, port)
+        decryptor = BlockDecryptor(cipher_blocks[index], cipher_blocks[index - 1], oracle_client)
+        
+        try:
+            decrypted_text.extend(decryptor.decrypt_block())
+        except Exception as e:
+            print(f"Error decrypting block {index}: {e}")
+            oracle_client.close()
+            raise
+        
+        oracle_client.close()
 
-        for byte_index in range(block_size - 1, -1, -1):
-            padding_value = block_size - byte_index
-
-            # Modify bytes for expected padding
-            for i in range(byte_index + 1, block_size):
-                previous_block[i] = intermediate[i] ^ padding_value
-
-            # Try each byte value
-            found = False
-            for guess in range(256):
-                original_byte = previous_block[byte_index]
-                previous_block[byte_index] = guess
-
-                # Send modified data and receive response
-                try:
-                    response = connect_to_server(hostname, port, current_block, [bytes(previous_block)])
-                    if response[0] == 1:  # Valid padding
-                        print(f"Found valid padding for byte_index {byte_index}: guess {guess}")
-                        intermediate[byte_index] = guess ^ padding_value
-                        decrypted_block[byte_index] = intermediate[byte_index] ^ original_byte
-                        found = True
-                        break
-                except Exception as e:
-                    print(f"Error communicating with server: {e}")
-                    continue
-
-                # Restore original byte if guess was incorrect
-                previous_block[byte_index] = original_byte
-
-        if not found:
-            raise Exception(f"Failed to find valid padding byte at byte index {byte_index}.")
-
-        decrypted.extend(decrypted_block)
-
-    return decrypted
+    
+    return {"plaintext": encode_base64(bytes(decrypted_text))}
