@@ -10,6 +10,7 @@ from handlers.sea128 import SEA128Handler
 from handlers.fde import FDEHandler
 from handlers.gcm import GCMHandler
 from handlers.padding_attack import decrypt_ciphertext
+from handlers.gfpolyops import gfpoly_add
 
 sea128 = SEA128Handler()
 xex = FDEHandler()
@@ -23,7 +24,8 @@ ACTION_MAP = {
     "xex": xex.xex,
     "gcm_encrypt": gcm.gcm_encrypt_action,
     "gcm_decrypt": gcm.gcm_decrypt_action,
-    "padding_oracle" : decrypt_ciphertext
+    "padding_oracle" : decrypt_ciphertext,
+    "gfpoly_add": gfpoly_add
 }
 
 def process_testcase(action, arguments):

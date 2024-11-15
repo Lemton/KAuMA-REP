@@ -47,6 +47,9 @@ class FieldElement:
             
         return FieldElement(z)
 
+    def __add__(self, other):
+         return FieldElement(self.value ^ other.value)
+
     def __str__(self):
         return f"{int(self)}"
     
