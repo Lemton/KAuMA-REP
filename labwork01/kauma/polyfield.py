@@ -44,8 +44,20 @@ class PolyFieldElement:
 
         return PolyFieldElement(result_coefficients)
 
+    def __pow__ (self, exponent):
+        if not isinstance(exponent, int) or exponent < 0:
+            raise ValueError("Exponent must be a non-negative integer.")
 
+        result = PolyFieldElement([FieldElement(1)])
 
+        base = self  
+        while exponent > 0:
+            if exponent % 2 == 1:
+                result = result * base  
+            base = base * base  
+            exponent //= 2
+
+        return result
        
     
     
