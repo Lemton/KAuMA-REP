@@ -39,14 +39,16 @@ def gfpoly_mul(arguments):
     return {"P" : result_encoded}
 
 def gfpoly_pow(arguments):
-    coeffs = arguments.get("A")
+    coeffs = arguments.get("A", [])
     k = arguments.get("k")
     
-    a_coeffs = [FieldElement(int.from_bytes(decode_base64(a), 'big'), "gcm") for a in coeffs]
+    a_coeffs = [FieldElement(int.from_bytes(decode_base64(a), 'big'),"gcm") for a in coeffs]
     
-    poly = PolyFieldElement(a_coeffs)
+    
 
-    polypow = poly ** k
+    
+    polypow = PolyFieldElement(a_coeffs) ** k
+
 
     polypowencode = [encode_base64(coeff.to_bytes()) for coeff in polypow.coefficients]
 

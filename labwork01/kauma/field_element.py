@@ -56,7 +56,47 @@ class FieldElement:
             result.value = int.from_bytes(reverse_bit_order(result.value.to_bytes(16, byteorder='big')), byteorder='little')
 
         return result
+    
+    def inverse(self):
+       
+        if self.value == 0:
+            raise ZeroDivisionError("Cannot invert zero in a finite field")
 
+        
+        a, b = self.MODULO, self.value
+        x0, x1 = 0, 1
+        while b != 0:
+            q = a // b
+            a, b = b, a % b
+            x0, x1 = x1, x0 ^ q * x1  
+
+        return FieldElement(x0, self.MODULO)
+
+    def __floordiv__(self, other):
+        if not isinstance(other, FieldElement):
+            raise TypeError("Division is only supported between FieldElement instances")
+
+        if self.semantic != other.semantic:
+            raise ValueError("Field elements must have the same semantic for division")
+
+        
+        X = int(self)
+        Y = int(other)
+
+        if self.semantic == "gcm":
+            
+            X = int.from_bytes(reverse_bit_order(X.to_bytes(16, byteorder='big')), byteorder='little')
+            Y = int.from_bytes(reverse_bit_order(Y.to_bytes(16, byteorder='big')), byteorder='little')
+
+        
+        inv_Y = FieldElement(Y, self.semantic).inverse()  
+        Z = FieldElement(X, self.semantic) * inv_Y  
+
+        if self.semantic == "gcm":
+            
+            Z.value = int.from_bytes(reverse_bit_order(Z.value.to_bytes(16, byteorder='big')), byteorder='little')
+
+        return Z
 
     def __add__(self, other):
          return FieldElement(self.value ^ other.value)
@@ -75,4 +115,9 @@ class FieldElement:
          return self.value.to_bytes(length, byteorder)
 
     def __eq__(self, other):
-        	return ((int(self)-int(other)) % self.MODULO) == 0
+        return ((int(self)-int(other)) % self.MODULO) == 0
+    
+    
+    def __repr__(self):
+        # Assuming the value is an integer; adjust if your implementation differs
+        return f"FieldElement({hex(self.value)})"

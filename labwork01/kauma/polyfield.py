@@ -7,10 +7,10 @@ class PolyFieldElement:
     def __init__(self, coefficients):
     
         self.coefficients = coefficients
-
+        
     def __add__(self, other):
         if not isinstance(other, PolyFieldElement):
-            raise TypeError("Operand must be of type Polyfield")
+            raise TypeError("Operand must be of type PolyFieldElement")
         
         max_len = max(len(self.coefficients), len(other.coefficients))
         result_coefficients = []
@@ -18,9 +18,17 @@ class PolyFieldElement:
         for i in range(max_len):
             coeff_a = self.coefficients[i] if i < len(self.coefficients) else FieldElement(0)
             coeff_b = other.coefficients[i] if i < len(other.coefficients) else FieldElement(0)
-            result_coefficients.append(coeff_a + coeff_b)
+            
+            result = coeff_a ^ coeff_b
+            
+            result_coefficients.append(result)
 
-        return PolyFieldElement(result_coefficients)         
+        while len(result_coefficients) > 1 and result_coefficients[-1] == FieldElement(0):
+            result_coefficients.pop()
+
+        return PolyFieldElement(result_coefficients)
+
+            
     
     def __mul__(self, other):
         if not isinstance(other, PolyFieldElement):
@@ -44,20 +52,35 @@ class PolyFieldElement:
 
         return PolyFieldElement(result_coefficients)
 
-    def __pow__ (self, exponent):
-        if not isinstance(exponent, int) or exponent < 0:
-            raise ValueError("Exponent must be a non-negative integer.")
+    def __pow__(self, exponent):
+        
+        if exponent == 0:
+                return FieldElement(1)
 
-        result = PolyFieldElement([FieldElement(1)])
 
+        result = PolyFieldElement([FieldElement(1)])  
         base = self  
+
         while exponent > 0:
+            
             if exponent % 2 == 1:
                 result = result * base  
             base = base * base  
             exponent //= 2
 
+        
+        result.coefficients = self._remove_leading_zeros(result.coefficients)
         return result
-       
-    
-    
+
+    def _remove_leading_zeros(self, coefficients):
+     
+        while len(coefficients) > 1 and coefficients[-1] == FieldElement(0):
+            coefficients.pop()
+        return coefficients
+
+
+
+    def __repr__(self):
+        return f"PolyFieldElement(coefficients={self.coefficients})"
+
+

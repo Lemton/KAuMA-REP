@@ -1,7 +1,7 @@
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from field_element import FieldElement
-from handlers.gfmul import gcm_gfmul
+from handlers.gfops import gcm_gfmul
 
 
 def aes128_encrypt(key: bytes, data: bytes) -> bytes:

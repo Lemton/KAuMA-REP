@@ -53,3 +53,16 @@ def xex_gfmul(block_a_bytes, block_b_bytes):
     result_bytes = result_block.to_bytes(16, byteorder='little')
 
     return result_bytes
+
+def gfdiv(arguements):
+    a = arguements.get("a")
+    b = arguements.get("b")
+
+    counter = FieldElement(int.from_bytes(decode_base64(a), 'big'),"gcm")
+    nominator = FieldElement(int.from_bytes(decode_base64(b), 'big'),"gcm")
+
+    result_int = counter // nominator
+
+    result = encode_base64(result_int.to_bytes())
+
+    return {"q": result}

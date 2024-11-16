@@ -4,7 +4,7 @@ import json
 import sys
 import base64 
 from utils.conversions import poly2block, block2poly
-from handlers.gfmul import gfmul
+from handlers.gfops import gfmul, gfdiv
 from field_element import FieldElement  
 from handlers.sea128 import SEA128Handler
 from handlers.fde import FDEHandler
@@ -27,7 +27,8 @@ ACTION_MAP = {
     "padding_oracle" : decrypt_ciphertext,
     "gfpoly_add": gfpoly_add,
     "gfpoly_mul": gfpoly_mul,
-    "gfpoly_pow": gfpoly_pow
+    "gfpoly_pow": gfpoly_pow,
+    "gfdiv": gfdiv
 }
 
 def process_testcase(action, arguments):
