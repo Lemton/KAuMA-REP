@@ -60,18 +60,12 @@ class FieldElement:
     
     def inverse(self):
        
+
         if self.value == 0:
             raise ZeroDivisionError("Cannot invert zero in a finite field")
-
+    
         
-        a, b = self.MODULO, self.value
-        x0, x1 = 0, 1
-        while b != 0:
-            q = a // b
-            a, b = b, a % b
-            x0, x1 = x1, x0 ^ q * x1  
-
-        return FieldElement(x0, self.MODULO)
+        return self ** (2**128 - 2)
 
     def __floordiv__(self, other):
         if not isinstance(other, FieldElement):
@@ -105,6 +99,22 @@ class FieldElement:
 
         new_value = self.value ^ other.value
         return FieldElement(new_value, self.semantic)   
+
+    def __pow__(self, exponent):
+    
+        if exponent < 0:
+            raise ValueError("Exponent must be non-negative")
+
+        result = FieldElement(1, self.semantic)  
+        base = self
+
+        while exponent > 0:
+            if exponent % 2 == 1:
+                result = result * base  
+            base = base * base 
+            exponent //= 2  
+
+        return result
 
     def __str__(self):
         return f"{int(self)}"

@@ -69,8 +69,9 @@ class PolyFieldElement:
                 coeff.semantic = "gcm"
 
 
-        '''
-        
+
+
+        '''        
         while exponent > 0:
             print(exponent)
             if exponent % 2 == 1:
