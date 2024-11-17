@@ -58,16 +58,28 @@ class PolyFieldElement:
                 return FieldElement(1)
 
 
-        result = PolyFieldElement([FieldElement(1)])  
-        base = self  
+        base = self
 
+        result = base  
+
+        for i in range(1,exponent):
+            print(i)
+            result = result * base
+            for coeff in result.coefficients:
+                coeff.semantic = "gcm"
+
+
+        '''
+        
         while exponent > 0:
-            
+            print(exponent)
             if exponent % 2 == 1:
                 result = result * base  
             base = base * base  
             exponent //= 2
 
+        '''
+        
         
         result.coefficients = self._remove_leading_zeros(result.coefficients)
         return result

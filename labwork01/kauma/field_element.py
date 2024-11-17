@@ -1,5 +1,5 @@
 from utils.conversions import reverse_bit_order
-
+from utils.conversions import encode_base64
 class FieldElement:
 
     MODULO = (1 << 128) | (1 << 7) | (1 << 2) | (1 << 1) | 1
@@ -49,11 +49,12 @@ class FieldElement:
             else:
                 V = (V << 1) ^ self.MODULO  
 
-        result = FieldElement(z, self.semantic) 
-
+        result = FieldElement(z, self.semantic)
         
         if self.semantic == "gcm":
             result.value = int.from_bytes(reverse_bit_order(result.value.to_bytes(16, byteorder='big')), byteorder='little')
+
+         
 
         return result
     
@@ -99,7 +100,11 @@ class FieldElement:
         return Z
 
     def __add__(self, other):
-         return FieldElement(self.value ^ other.value)
+        if not isinstance(other, FieldElement):
+            raise TypeError("Addition is only supported between FieldElement instances")
+
+        new_value = self.value ^ other.value
+        return FieldElement(new_value, self.semantic)   
 
     def __str__(self):
         return f"{int(self)}"
@@ -120,4 +125,4 @@ class FieldElement:
     
     def __repr__(self):
         # Assuming the value is an integer; adjust if your implementation differs
-        return f"FieldElement({hex(self.value)})"
+        return f"FieldElement({encode_base64(self.value.to_bytes(16, byteorder="big"))}))"

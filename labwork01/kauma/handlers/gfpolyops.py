@@ -44,9 +44,6 @@ def gfpoly_pow(arguments):
     
     a_coeffs = [FieldElement(int.from_bytes(decode_base64(a), 'big'),"gcm") for a in coeffs]
     
-    
-
-    
     polypow = PolyFieldElement(a_coeffs) ** k
 
 
