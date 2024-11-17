@@ -63,20 +63,22 @@ class PolyFieldElement:
         result = base  
 
         for i in range(1,exponent):
-            print(i)
             result = result * base
             for coeff in result.coefficients:
                 coeff.semantic = "gcm"
 
+        '''
 
-
-
-        '''        
-        while exponent > 0:
+        while exponent > 1:
             print(exponent)
             if exponent % 2 == 1:
                 result = result * base  
+                for coeff in result.coefficients:
+                    coeff.semantic = "gcm"
             base = base * base  
+            for coeff in base.coefficients:
+                    coeff.semantic = "gcm"
+
             exponent //= 2
 
         '''
