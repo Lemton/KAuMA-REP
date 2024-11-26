@@ -154,6 +154,44 @@ class PolyFieldElement:
             coefficients.pop()
         return coefficients
 
+    def __lt__(self, other):
+        """
+        Vergleicht zwei Polynome gemäß der definierten totalen Ordnung:
+        1. Nach Grad.
+        2. Bei gleichem Grad, lexikografisch von der höchsten zur niedrigsten Potenz.
+        """
+        if not isinstance(other, PolyFieldElement):
+            return NotImplemented
+
+        # Vergleich nach Grad
+        if len(self.coefficients) != len(other.coefficients):
+            return len(self.coefficients) < len(other.coefficients)
+
+        # Lexikografischer Vergleich der Koeffizienten von höchster Potenz zu niedrigster
+        for coeff_self, coeff_other in zip(
+            reversed(self.coefficients), reversed(other.coefficients)
+        ):
+            if coeff_self != coeff_other:
+                return coeff_self.value < coeff_other.value
+
+        # Wenn beide Polynome vollständig gleich sind, ist keins kleiner
+        return False
+    
+    def sqrt(self):
+        
+        if any(i % 2 == 1 for i, coeff in enumerate(self.coefficients) if coeff != FieldElement(0)):
+            raise ValueError("Das Polynom enthält Koeffizienten mit ungeraden Exponenten und hat daher keine Quadratwurzel.")
+
+        # Extrahiere die Quadratwurzel für jeden geraden Koeffizienten
+        sqrt_coeffs = [coeff.sqrt() for i, coeff in enumerate(self.coefficients) if i % 2 == 0]
+
+        return PolyFieldElement(sqrt_coeffs)
+    
+    
+    
+    def is_zero(self):
+     
+        return all(coeff == FieldElement(0) for coeff in self.coefficients)
 
 
     def __repr__(self):

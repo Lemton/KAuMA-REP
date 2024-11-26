@@ -83,6 +83,7 @@ def gfpoly_divmod(arguments):
         "Q": quotient_encoded,
         "R": remainder_encoded
     }
+
 def gfpoly_powmod(arguments):
     poly_a_b64coeffs = arguments.get("A", [])
     poly_m_b64coeffs = arguments.get("M", [])
@@ -103,3 +104,97 @@ def gfpoly_powmod(arguments):
     result_encoded = [encode_base64(FieldElement.gcm_to_block(coeff.value)) for coeff in result_poly.coefficients]
 
     return {"Z": result_encoded}
+
+def gfpoly_sort(arguments):
+    
+    polys = arguments.get("polys", [])
+
+    # Wandelt die Base64-codierten Polynome in PolyFieldElement-Objekte um
+    poly_list = [
+        PolyFieldElement([
+            FieldElement.gcm_from_block(decode_base64(coeff))
+            for coeff in poly_base64
+        ])
+        for poly_base64 in polys
+    ]
+
+    # Sortiere die Polynome direkt basierend auf der `__lt__`-Methode
+    sorted_polys = sorted(poly_list)
+
+    # Kodiert die sortierten Polynome zurück in Base64
+    sorted_polys_encoded = [
+        [
+            encode_base64(FieldElement.gcm_to_block(coeff.value))
+            for coeff in poly.coefficients
+        ]
+        for poly in sorted_polys
+    ]
+
+    return {"sorted_polys": sorted_polys_encoded}
+
+def gfpoly_gcd(arguments):
+    poly_a_b64coeffs = arguments.get("A", [])
+    poly_b_b64coeffs = arguments.get("B", [])
+
+    # Umwandlung der Koeffizienten von Base64 zu FieldElementen
+    a_coeffs = [FieldElement.gcm_from_block(decode_base64(a)) for a in poly_a_b64coeffs]
+    b_coeffs = [FieldElement.gcm_from_block(decode_base64(b)) for b in poly_b_b64coeffs]
+
+    # Erstellung der PolyFieldElemente
+    poly_a = PolyFieldElement(a_coeffs)
+    poly_b = PolyFieldElement(b_coeffs)
+
+    # Euklidischer Algorithmus
+    while not poly_b.is_zero():
+        poly_a, poly_b = poly_b, poly_a % poly_b
+
+    # Normierung des Ergebnisses zu einem monischen Polynom
+    leading_coeff = poly_a.coefficients[-1]
+    monic_gcd = PolyFieldElement([coeff / leading_coeff for coeff in poly_a.coefficients])
+
+    # Ergebnis zurück in Base64-Blöcke umwandeln
+    gcd_encoded = [encode_base64(FieldElement.gcm_to_block(coeff.value)) for coeff in monic_gcd.coefficients]
+
+    return {"G": gcd_encoded}
+
+
+def gfpoly_make_monic(arguments):
+    """
+    Überführt ein Polynom in die monische Form, indem alle Koeffizienten durch den führenden Koeffizienten geteilt werden.
+    """
+    # Extrahiere Argumente
+    poly_a_b64coeffs = arguments.get("A", [])
+
+    # Umwandlung der Koeffizienten von Base64 zu FieldElementen
+    a_coeffs = [FieldElement.gcm_from_block(decode_base64(a)) for a in poly_a_b64coeffs]
+
+    # Erstellung des PolyFieldElements
+    poly_a = PolyFieldElement(a_coeffs)
+
+    # Führenden Koeffizienten extrahieren
+    leading_coeff = poly_a.coefficients[-1]
+
+    # Normierung des Polynoms
+    monic_poly = PolyFieldElement([coeff / leading_coeff for coeff in poly_a.coefficients])
+
+    # Ergebnis zurück in Base64-Blöcke umwandeln
+    monic_encoded = [encode_base64(FieldElement.gcm_to_block(coeff.value)) for coeff in monic_poly.coefficients]
+
+    return {"A*": monic_encoded}
+
+def gfpoly_sqrt(arguments):
+    poly_q_b64coeffs = arguments.get("Q", [])
+
+    # Umwandlung der Koeffizienten von Base64 zu FieldElementen
+    q_coeffs = [FieldElement.gcm_from_block(decode_base64(q)) for q in poly_q_b64coeffs]
+
+    # Erstellung des PolyFieldElements
+    poly_q = PolyFieldElement(q_coeffs)
+
+    # Berechnung der Quadratwurzel
+    sqrt_poly = poly_q.sqrt()
+
+    # Ergebnis zurück in Base64-Blöcke umwandeln
+    sqrt_encoded = [encode_base64(FieldElement.gcm_to_block(coeff.value)) for coeff in sqrt_poly.coefficients]
+
+    return {"S": sqrt_encoded}

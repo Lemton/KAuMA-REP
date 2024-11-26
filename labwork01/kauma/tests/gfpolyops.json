@@ -68,6 +68,42 @@
             ],
             "k": 1000
             }
-            }        
+            },
+    "gfpoly_sort":{
+              "action": "gfpoly_sort",
+              "arguments": {
+              "polys": [
+              [
+              "NeverGonnaGiveYouUpAAA==",
+              "NeverGonnaLetYouDownAA==",
+              "NeverGonnaRunAroundAAA==",
+              "AndDesertYouAAAAAAAAAA=="
+              ],
+              [
+              "WereNoStrangersToLoveA==",
+              "YouKnowTheRulesAAAAAAA==",
+              "AndSoDoIAAAAAAAAAAAAAA=="
+              ],
+              [
+              "NeverGonnaMakeYouCryAA==",
+              "NeverGonnaSayGoodbyeAA==",
+              "NeverGonnaTellALieAAAA==",
+              "AndHurtYouAAAAAAAAAAAA=="
+              ]
+              ]
+              }
+              },
+              "Make Monic": {
+                "action": "gfpoly_make_monic",
+                "arguments": {
+                "A": [
+                "NeverGonnaGiveYouUpAAA==",
+                "NeverGonnaLetYouDownAA==",
+                "NeverGonnaRunAroundAAA==",
+                "AndDesertYouAAAAAAAAAA=="
+                ]
+                }
+                }
+                    
 }     
 }
