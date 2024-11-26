@@ -1,0 +1,73 @@
+{
+    "testcases": {
+      "gf_polyadd": {
+        "action": "gfpoly_add",
+        "arguments": {
+        "A": [
+        "NeverGonnaGiveYouUpAAA==",
+        "NeverGonnaLetYouDownAA==",
+        "NeverGonnaRunAroundAAA==",
+        "AndDesertYouAAAAAAAAAA=="
+        ],
+        "B": [
+        "KryptoanalyseAAAAAAAAA==",
+        "DHBWMannheimAAAAAAAAAA=="
+        ]
+        }
+        },
+      "gfpoly_mul": {
+        "action": "gfpoly_mul",
+        "arguments": {
+        "A": [
+        "JAAAAAAAAAAAAAAAAAAAAA==",
+        "wAAAAAAAAAAAAAAAAAAAAA==",
+        "ACAAAAAAAAAAAAAAAAAAAA=="
+        ],
+        "B": [
+        "0AAAAAAAAAAAAAAAAAAAAA==",
+        "IQAAAAAAAAAAAAAAAAAAAA=="
+        ]
+        }
+        },
+    "gfpoly_pow":{
+        "action": "gfpoly_pow",
+        "arguments": {
+        "A": [
+        "JAAAAAAAAAAAAAAAAAAAAA==",
+        "wAAAAAAAAAAAAAAAAAAAAA==",
+        "ACAAAAAAAAAAAAAAAAAAAA=="
+        ],
+        "k": 3
+        }
+        },
+    "gfpoly_divmod":{
+        "action": "gfpoly_divmod",
+        "arguments": {
+        "A": [
+        "JAAAAAAAAAAAAAAAAAAAAA==",
+        "wAAAAAAAAAAAAAAAAAAAAA==",
+        "ACAAAAAAAAAAAAAAAAAAAA=="
+        ],
+        "B": [
+        "0AAAAAAAAAAAAAAAAAAAAA==",
+        "IQAAAAAAAAAAAAAAAAAAAA=="
+        ]
+        }
+        },
+    "gfpoly_powmod":{
+            "action": "gfpoly_powmod",
+            "arguments": {
+            "A": [
+            "JAAAAAAAAAAAAAAAAAAAAA==",
+            "wAAAAAAAAAAAAAAAAAAAAA==",
+            "ACAAAAAAAAAAAAAAAAAAAA=="
+            ],
+            "M": [
+            "KryptoanalyseAAAAAAAAA==",
+            "DHBWMannheimAAAAAAAAAA=="
+            ],
+            "k": 1000
+            }
+            }        
+}     
+}

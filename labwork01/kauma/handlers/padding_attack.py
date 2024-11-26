@@ -1,6 +1,6 @@
 import socket
 import struct
-from utils.conversions import encode_base64, decode_base64
+from utils.bitops import encode_base64, decode_base64
 
 BLOCK_SIZE = 16
 TIMEOUT = 10.0

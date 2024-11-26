@@ -1,0 +1,60 @@
+{
+  "testcases": {
+    "testcase_1": {
+      "action": "poly2block",
+      "arguments": {
+        "semantic": "xex",
+        "coefficients": [12, 127, 9, 0]
+      }
+    },
+    "testcase_2": {
+      "action": "poly2block",
+      "arguments": {
+        "semantic": "xex",
+        "coefficients": [3, 5, 8, 15]
+      }
+    },
+    "testcase_3": {
+      "action": "block2poly",
+      "arguments": {
+        "semantic": "xex",
+        "block": "ARIAAAAAAAAAAAAAAAAAgA=="
+      }
+    },
+    "testcase_4": {
+      "action": "block2poly",
+      "arguments": {
+        "semantic": "xex",
+        "block": "AQIDBAUGBwgJCgsMDQ4PEA=="
+      }
+    },
+    "testcase_5": {
+      "action": "poly2block",
+      "arguments": {
+        "semantic": "gcm",
+        "coefficients": [12, 127, 9, 0]
+      }
+    },
+    "testcase_6": {
+      "action": "poly2block",
+      "arguments": {
+        "semantic": "gcm",
+        "coefficients": [3, 5, 8, 15]
+      }
+    },
+    "testcase_7": {
+      "action": "block2poly",
+      "arguments": {
+        "semantic": "gcm",
+        "block": "ARIAAAAAAAAAAAAAAAAAgA=="
+      }
+    },
+    "testcase_8": {
+      "action": "block2poly",
+      "arguments": {
+        "semantic": "gcm",
+        "block": "AQIDBAUGBwgJCgsMDQ4PEA=="
+      }
+    }
+  }
+}

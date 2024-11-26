@@ -1,0 +1,34 @@
+{
+    "testcases": {
+      "Multiplikation_1": {
+        "action": "gfmul",
+        "arguments": {
+        "semantic": "xex",
+        "a": "ARIAAAAAAAAAAAAAAAAAgA==",
+        "b": "AgAAAAAAAAAAAAAAAAAAAA=="
+        }
+        },
+      "Multiplikation_2": {
+        "action": "gfmul",
+        "arguments": {
+        "semantic": "gcm",
+        "a": "wAwAAAAAAAAAAAAAAAAAAA==",
+        "b": "wAwAAAAAAAAAAAAAAAAAAA=="
+        }
+    },
+    "Division_1":{
+        "action": "gfdiv",
+        "arguments": {
+        "a": "JAAAAAAAAAAAAAAAAAAAAA==",
+        "b": "wAAAAAAAAAAAAAAAAAAAAA=="
+        }
+        },
+    "Division_2":{
+        "action": "gfdiv",
+        "arguments": {
+        "a": "JAAAAAAAAAAAAAAAAAAAAA==",
+        "b": "wAwAAAAAAAAAAAAAAAAAAA=="
+        }
+        }      
+}     
+}

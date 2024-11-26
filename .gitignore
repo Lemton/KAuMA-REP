@@ -95,5 +95,3 @@ tox.ini
 *.pstats
 *.out
 
-#Testcases zum Ausführen excluden
-*.json

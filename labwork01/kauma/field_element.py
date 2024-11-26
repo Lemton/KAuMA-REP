@@ -1,127 +1,94 @@
-from utils.conversions import reverse_bit_order
-from utils.conversions import encode_base64
+import binascii
+from utils.bitops import reverse_bit_order
+import base64
+
 class FieldElement:
 
     MODULO = (1 << 128) | (1 << 7) | (1 << 2) | (1 << 1) | 1
 
-    def __init__(self, value, semantic=None):
-        self.value = value % self.MODULO
-        self.semantic = semantic
-
-    def __xor__(self, other):
+    def __init__(self, value):
+        self.value = value
         
-        if isinstance(other, FieldElement):
-            new_value = self.value ^ other.value
-        elif isinstance(other, int):
-            new_value = self.value ^ other
-        else:
-            raise TypeError("Unsupported type for XOR operation")
-
-        return FieldElement(new_value % self.MODULO)
-
+    def __xor__(self, other):
+        return FieldElement(self.value ^ int(other))
 
     def __mul__(self, other):
-
         if not isinstance(other, FieldElement):
             raise TypeError("Multiplication is only supported between FieldElement instances")
-
-        X = int(self)
-        Y = int(other)
         
-        
-        if self.semantic == "gcm":
-            X = int.from_bytes(reverse_bit_order(X.to_bytes(16, byteorder='big')), byteorder='little')
-            Y = int.from_bytes(reverse_bit_order(Y.to_bytes(16, byteorder='big')), byteorder='little')
-
-        elif self.semantic == "xex":
-            
-            pass
+        X = self.value
+        Y = other.value
 
         z = 0
-        V: int = X
-        for i in range(128):
-            if (Y >> i) & 0x1 == 1:
-                z ^= V  
+        V = X
+
+        while Y:
+            if Y & 1:
+                z ^= V
             
-            
-            if (V >> 127) & 0x1 == 0:
-                V <<= 1
+            if V & (1 << 127):  # Prüfen des höchsten Bits
+                V = (V << 1) ^ self.MODULO
             else:
-                V = (V << 1) ^ self.MODULO  
-
-        result = FieldElement(z, self.semantic)
+                V <<= 1
+            
+            Y >>= 1  # Rechts-Shift für Y
         
-        if self.semantic == "gcm":
-            result.value = int.from_bytes(reverse_bit_order(result.value.to_bytes(16, byteorder='big')), byteorder='little')
-
-         
-
-        return result
-    
-    def inverse(self):
-       
-
+        return FieldElement(z)
+        
+    def __invert__(self):
+        """
+        Überlädt den ~-Operator, um das multiplikative Inverse des Feld-Elements zu berechnen.
+        """
         if self.value == 0:
             raise ZeroDivisionError("Cannot invert zero in a finite field")
-    
-        
-        return self ** (2**128 - 2)
+        return self ** (2 ** 128 - 2)
 
-    def __floordiv__(self, other):
+    def __truediv__(self, other):
+        """
+        Überlädt den /-Operator, um die Division von Feld-Elementen zu ermöglichen.
+        """
         if not isinstance(other, FieldElement):
             raise TypeError("Division is only supported between FieldElement instances")
-
-        if self.semantic != other.semantic:
-            raise ValueError("Field elements must have the same semantic for division")
-
         
-        X = int(self)
-        Y = int(other)
+        # Division ist definiert als Multiplikation mit dem Inversen
+        return self * ~other
 
-        if self.semantic == "gcm":
-            
-            X = int.from_bytes(reverse_bit_order(X.to_bytes(16, byteorder='big')), byteorder='little')
-            Y = int.from_bytes(reverse_bit_order(Y.to_bytes(16, byteorder='big')), byteorder='little')
-
-        
-        inv_Y = FieldElement(Y, self.semantic).inverse()  
-        Z = FieldElement(X, self.semantic) * inv_Y  
-
-        if self.semantic == "gcm":
-            
-            Z.value = int.from_bytes(reverse_bit_order(Z.value.to_bytes(16, byteorder='big')), byteorder='little')
-
-        return Z
 
     def __add__(self, other):
         if not isinstance(other, FieldElement):
             raise TypeError("Addition is only supported between FieldElement instances")
 
         new_value = self.value ^ other.value
-        return FieldElement(new_value, self.semantic)   
+        return FieldElement(new_value)   
 
     def __pow__(self, exponent):
-    
         if exponent < 0:
             raise ValueError("Exponent must be non-negative")
 
-        result = FieldElement(1, self.semantic)  
+        if exponent == 0:
+            return FieldElement(1)
+        
+        if exponent == 1:
+            return self
+        
+        result = FieldElement(1)
         base = self
 
         while exponent > 0:
-            if exponent % 2 == 1:
-                result = result * base  
-            base = base * base 
-            exponent //= 2  
+            if exponent & 1:
+                result *= base
+            base *= base
+            exponent >>= 1
 
         return result
+
 
     def __str__(self):
         return f"{int(self)}"
     
     def __int__(self):
          return self.value
-
+    
     def from_bytes(self):
          return self.value.from_bytes(byteorder = "big", length = 16)
 
@@ -135,4 +102,41 @@ class FieldElement:
     
     def __repr__(self):
         # Assuming the value is an integer; adjust if your implementation differs
-        return f"FieldElement({encode_base64(self.value.to_bytes(16, byteorder="big"))}))"
+        return f"FieldElement({base64.b64encode((self.value.to_bytes(16, byteorder="big")))}))"
+
+
+   
+    @staticmethod
+    def gcm_from_block(block):
+        """
+        Wandelt einen 16-Byte-Block (als Bytes) direkt in ein FieldElement für die GCM-Semantik um.
+        """
+        if len(block) != 16:
+            raise ValueError("GCM-Blöcke müssen genau 16 Bytes lang sein.")
+        int_value = int.from_bytes(reverse_bit_order(block), byteorder='little')
+        return FieldElement(int_value)
+
+
+    @staticmethod
+    def gcm_to_block(integer_value):
+        
+        reversed_bytes = reverse_bit_order(integer_value.to_bytes(16, byteorder='little'))
+        return reversed_bytes
+    
+    @staticmethod
+    def xex_from_block(block):
+        """
+        Wandelt einen 16-Byte-Block (als Bytes) direkt in ein FieldElement für die XEX-Semantik um.
+        """
+        if len(block) != 16:
+            raise ValueError("XEX-Blöcke müssen genau 16 Bytes lang sein.")
+        int_value = int.from_bytes(block, byteorder='little')
+        return FieldElement(int_value)
+
+    @staticmethod
+    def xex_to_block(int_value):
+        """
+        Encodiert einen FieldElement-Wert in einen 16-Byte-XEX-Block.
+        """
+        bytes_data = int_value.to_bytes(16, byteorder='little')
+        return bytes_data 

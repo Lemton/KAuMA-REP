@@ -1,5 +1,5 @@
-from handlers.sea128 import *
-from utils.conversions import encode_base64, decode_base64, xor_bytes
+from handler.sea128 import *
+from utils.bitops import encode_base64, decode_base64, xor_bytes
 from field_element import FieldElement
 
 class FDEHandler:
