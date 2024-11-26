@@ -13,36 +13,57 @@ class FieldElement:
         return FieldElement(self.value ^ int(other))
 
     def __mul__(self, other):
+    
         if not isinstance(other, FieldElement):
             raise TypeError("Multiplication is only supported between FieldElement instances")
-        
+
         X = self.value
         Y = other.value
-
-        z = 0
-        V = X
+        result = 0
 
         while Y:
+            # Wenn das niedrigste Bit von Y gesetzt ist, addiere X zu result
             if Y & 1:
-                z ^= V
-            
-            if V & (1 << 127):  # Prüfen des höchsten Bits
-                V = (V << 1) ^ self.MODULO
+                result ^= X
+
+            # Verschiebe X um 1 Bit nach links und reduziere mit MODULO, falls nötig
+            if X & (1 << 127):  # Prüfen, ob das höchste Bit von X gesetzt ist
+                X = (X << 1) ^ self.MODULO
             else:
-                V <<= 1
-            
-            Y >>= 1  # Rechts-Shift für Y
-        
-        return FieldElement(z)
+                X <<= 1
+
+            # Verschiebe Y um 1 Bit nach rechts
+            Y >>= 1
+
+        return FieldElement(result)
         
     def __invert__(self):
-        """
-        Überlädt den ~-Operator, um das multiplikative Inverse des Feld-Elements zu berechnen.
-        """
         if self.value == 0:
             raise ZeroDivisionError("Cannot invert zero in a finite field")
-        return self ** (2 ** 128 - 2)
 
+        r0, r1 = self.MODULO, self.value  # Initialisiere Rest-Polynome
+        t0, t1 = 0, 1  # Initialisiere Koeffizienten für das Inverse
+
+        while r1 != 0:
+            # Sicherstellen, dass r0 >= r1
+            if r0 < r1:
+                r0, r1 = r1, r0
+                t0, t1 = t1, t0  # Tausche auch die Koeffizienten
+            
+            # Gradunterschied berechnen
+            q = r0.bit_length() - r1.bit_length()
+
+            # Aktualisiere Reste (wie ggT)
+            r0, r1 = r1, r0 ^ (r1 << q)
+
+            # Aktualisiere die Koeffizienten für das Inverse
+            t0, t1 = t1, t0 ^ (t1 << q)
+
+        # Prüfen, ob ggT 1 ist (Invertierbarkeit)
+        if r0 != 1:
+            raise ZeroDivisionError("No multiplicative inverse exists")
+
+        return FieldElement(t0)
     def __truediv__(self, other):
         """
         Überlädt den /-Operator, um die Division von Feld-Elementen zu ermöglichen.
@@ -50,8 +71,9 @@ class FieldElement:
         if not isinstance(other, FieldElement):
             raise TypeError("Division is only supported between FieldElement instances")
         
+        inv = ~other
         # Division ist definiert als Multiplikation mit dem Inversen
-        return self * ~other
+        return self * inv 
 
 
     def __add__(self, other):
@@ -128,9 +150,7 @@ class FieldElement:
     
     @staticmethod
     def xex_from_block(block):
-        """
-        Wandelt einen 16-Byte-Block (als Bytes) direkt in ein FieldElement für die XEX-Semantik um.
-        """
+
         if len(block) != 16:
             raise ValueError("XEX-Blöcke müssen genau 16 Bytes lang sein.")
         int_value = int.from_bytes(block, byteorder='little')
@@ -138,8 +158,6 @@ class FieldElement:
 
     @staticmethod
     def xex_to_block(int_value):
-        """
-        Encodiert einen FieldElement-Wert in einen 16-Byte-XEX-Block.
-        """
+ 
         bytes_data = int_value.to_bytes(16, byteorder='little')
         return bytes_data 

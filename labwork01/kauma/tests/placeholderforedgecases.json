@@ -1,14 +1,24 @@
 {
-        "action": "gfpoly_sqrt",
+        "action": "gfpoly_factor_sff",
         "arguments": {
-        "Q": [
-        "5TxUxLHO1lHE/rSFquKIAg==",
-        "AAAAAAAAAAAAAAAAAAAAAA==",
-        "0DEUJYdHlmd4X7nzzIdcCA==",
-        "AAAAAAAAAAAAAAAAAAAAAA==",
-        "PKUa1+JHTxHE8y3LbuKIIA==",
-        "AAAAAAAAAAAAAAAAAAAAAA==",
-        "Ds96KiAKKoigKoiKiiKAiA=="
+        "F": [
+        "vL77UwAAAAAAAAAAAAAAAA==",
+        "mEHchYAAAAAAAAAAAAAAAA==",
+        "9WJa0MAAAAAAAAAAAAAAAA==",
+        "akHfwWAAAAAAAAAAAAAAAA==",
+        "E12o/QAAAAAAAAAAAAAAAA==",
+        "vKJ/FgAAAAAAAAAAAAAAAA==",
+        "yctWwAAAAAAAAAAAAAAAAA==",
+        "c1BXYAAAAAAAAAAAAAAAAA==",
+        "o0AtAAAAAAAAAAAAAAAAAA==",
+        "AbP2AAAAAAAAAAAAAAAAAA==",
+        "k2YAAAAAAAAAAAAAAAAAAA==",
+        "vBYAAAAAAAAAAAAAAAAAAA==",
+        "dSAAAAAAAAAAAAAAAAAAAA==",
+        "69gAAAAAAAAAAAAAAAAAAA==",
+        "VkAAAAAAAAAAAAAAAAAAAA==",
+        "a4AAAAAAAAAAAAAAAAAAAA==",
+        "gAAAAAAAAAAAAAAAAAAAAA=="
         ]
         }
         }

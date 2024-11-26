@@ -1,4 +1,5 @@
 from field_element import FieldElement
+from itertools import zip_longest
 
 class PolyFieldElement:
 
@@ -9,39 +10,63 @@ class PolyFieldElement:
     def __add__(self, other):
         if not isinstance(other, PolyFieldElement):
             raise TypeError("Operand must be of type PolyFieldElement")
-
-        # Auffüllen mit Null-Elementen
-        len_diff = len(self.coefficients) - len(other.coefficients)
-        if len_diff > 0:
-            other_coefficients = other.coefficients + [FieldElement(0)] * len_diff
-            self_coefficients = self.coefficients
-        else:
-            self_coefficients = self.coefficients + [FieldElement(0)] * abs(len_diff)
-            other_coefficients = other.coefficients
-
-        # Elementweise Addition
+    
+        # XOR zwischen den Koeffizienten
         result_coefficients = [
-            coeff_a ^ coeff_b for coeff_a, coeff_b in zip(self_coefficients, other_coefficients)
+            coeff_a ^ coeff_b for coeff_a, coeff_b in zip_longest(
+                self.coefficients, other.coefficients, fillvalue=FieldElement(0)
+            )
         ]
-
-        # Entferne führende Nullen
-        result_coefficients = self.remove_leading_zeros(result_coefficients)
-        return PolyFieldElement(result_coefficients)
+        return PolyFieldElement(self.remove_leading_zeros(result_coefficients))
     
     def __mul__(self, other):
         if not isinstance(other, PolyFieldElement):
             raise TypeError("Operand must be of type PolyFieldElement")
-
+        
         result_length = len(self.coefficients) + len(other.coefficients) - 1
         result_coefficients = [FieldElement(0)] * result_length
 
         for i, coeff_a in enumerate(self.coefficients):
+            if coeff_a == FieldElement(0):
+                continue  # Überspringe 0-Multiplikationen
             for j, coeff_b in enumerate(other.coefficients):
-                result_coefficients[i + j] += coeff_a * coeff_b
+                result_coefficients[i + j] ^= coeff_a * coeff_b  # XOR statt Addition im GF(2^n)
 
-        # Entferne führende Nullen
-        result_coefficients = self.remove_leading_zeros(result_coefficients)
-        return PolyFieldElement(result_coefficients)
+        return PolyFieldElement(self.remove_leading_zeros(result_coefficients))
+    def __floordiv__(self, other):
+        if not isinstance(other, PolyFieldElement):
+            raise TypeError("Operand must be of type PolyFieldElement")
+        if other.is_zero():
+            raise ZeroDivisionError("Cannot divide by zero polynomial")
+
+        # Kopiere die Koeffizienten des Dividenden und initialisiere den Quotienten
+        remainder = self.coefficients[:]
+        quotient = [FieldElement(0)] * (len(remainder) - len(other.coefficients) + 1)
+
+        divisor_degree = len(other.coefficients) - 1
+        divisor_leading_coeff = other.coefficients[-1]
+
+        while len(remainder) >= len(other.coefficients):
+            # Gradunterschied zwischen Divisor und aktuellem Rest
+            degree_diff = len(remainder) - len(other.coefficients)
+            # Führender Term der Division (Rest / Divisor-Leading-Coeff)
+            leading_term = remainder[-1] / divisor_leading_coeff
+            quotient[degree_diff] = leading_term
+
+            # Subtrahiere (Divisor * leading_term) vom Rest
+            for i in range(len(other.coefficients)):
+                remainder[i + degree_diff] ^= other.coefficients[i] * leading_term
+
+            # Entferne führende Null schnell (Pointer-Manipulation)
+            while remainder and remainder[-1] == FieldElement(0):
+                remainder.pop()
+
+        # Entferne führende Null im Quotienten (falls nötig)
+        while quotient and quotient[-1] == FieldElement(0):
+            quotient.pop()
+
+        return PolyFieldElement(quotient)
+
 
     def __pow__(self, exponent):
         if exponent < 0:
@@ -54,52 +79,48 @@ class PolyFieldElement:
         result = PolyFieldElement([FieldElement(1)])
         base = self
 
-        while exponent > 0:
-            if exponent % 2 == 1:
-                result *= base
-            base *= base
-            exponent //= 2
+        while exponent:
+            if exponent & 1:  # Prüfe das niedrigstwertige Bit
+                result = result * base
+            base = base * base
+            exponent >>= 1  # Schiebe die Bits nach rechts (Division durch 2)
 
         return result
     
     def __divmod__(self, other):
-        if not isinstance(other, PolyFieldElement):
-            raise TypeError("Operand must be of type PolyFieldElement")
+        if other.is_zero():
+            raise ZeroDivisionError("Cannot divide by zero polynomial")
 
-        if all(coeff == FieldElement(0) for coeff in other.coefficients):
-            raise ZeroDivisionError("Cannot divide by a zero polynomial")
-
-        quotient = []
+        # Kopiere die Koeffizienten des Dividenden
         remainder = self.coefficients[:]
+        quotient = [FieldElement(0)] * (len(remainder) - len(other.coefficients) + 1)
 
         divisor_degree = len(other.coefficients) - 1
         divisor_leading_coeff = other.coefficients[-1]
 
+        if divisor_leading_coeff == FieldElement(0):
+            raise ZeroDivisionError("Leading coefficient of divisor is zero")
+
         while len(remainder) >= len(other.coefficients):
+            # Gradunterschied zwischen Divisor und aktuellem Rest
             degree_diff = len(remainder) - len(other.coefficients)
+            # Führender Term der Division (Rest / Divisor-Leading-Coeff)
             leading_term = remainder[-1] / divisor_leading_coeff
+            quotient[degree_diff] = leading_term
 
-            # Erstelle das Polynom des aktuellen Quotienten-Terms
-            term_coefficients = [FieldElement(0)] * degree_diff + [leading_term]
-            term_poly = PolyFieldElement(term_coefficients)
+            # Subtrahiere (Divisor * leading_term) vom Rest
+            for i in range(len(other.coefficients)):
+                remainder[i + degree_diff] ^= other.coefficients[i] * leading_term
 
-            # Aktualisiere den Quotienten
-            quotient = [leading_term] + quotient
-
-            # Subtrahiere (term_poly * other) von remainder
-            remainder_poly = PolyFieldElement(remainder)
-            remainder = (remainder_poly + (term_poly * other)).coefficients
-
-            # Entferne führende Nullen im Rest
-            while len(remainder) > 1 and remainder[-1] == FieldElement(0):
+            # Entferne führende Null
+            while remainder and remainder[-1] == FieldElement(0):
                 remainder.pop()
 
-        # Erstelle PolyFieldElemente für Quotient und Rest
-        quotient_poly = PolyFieldElement(quotient)
-        remainder_poly = PolyFieldElement(remainder)
+        # Entferne führende Null im Quotienten (falls nötig)
+        while quotient and quotient[-1] == FieldElement(0):
+            quotient.pop()
 
-        # Rückgabe als Tupel
-        return quotient_poly, remainder_poly
+        return PolyFieldElement(quotient), PolyFieldElement(remainder)
 
     def powmod(self, exponent, modulus):
 
@@ -125,12 +146,13 @@ class PolyFieldElement:
 
         return result
 
+    
     def __mod__(self, other):
-
         if not isinstance(other, PolyFieldElement):
             raise TypeError("Operand must be of type PolyFieldElement")
 
-        quotient, remainder = divmod(self, other)
+        # Verwende die optimierte divmod-Implementierung
+        _, remainder = divmod(self, other)
         return remainder
 
     def __eq__(self, other):
@@ -155,11 +177,7 @@ class PolyFieldElement:
         return coefficients
 
     def __lt__(self, other):
-        """
-        Vergleicht zwei Polynome gemäß der definierten totalen Ordnung:
-        1. Nach Grad.
-        2. Bei gleichem Grad, lexikografisch von der höchsten zur niedrigsten Potenz.
-        """
+
         if not isinstance(other, PolyFieldElement):
             return NotImplemented
 
@@ -178,17 +196,61 @@ class PolyFieldElement:
         return False
     
     def sqrt(self):
+
+        result_coeffs = []
+        for i in range(0, len(self.coefficients), 2):  # Nur gerade Exponenten behalten
+            result_coeffs.append(self.coefficients[i])
+        return PolyFieldElement(result_coeffs)
         
-        if any(i % 2 == 1 for i, coeff in enumerate(self.coefficients) if coeff != FieldElement(0)):
-            raise ValueError("Das Polynom enthält Koeffizienten mit ungeraden Exponenten und hat daher keine Quadratwurzel.")
+    def gcd(a, b):
 
-        # Extrahiere die Quadratwurzel für jeden geraden Koeffizienten
-        sqrt_coeffs = [coeff.sqrt() for i, coeff in enumerate(self.coefficients) if i % 2 == 0]
+        while not b.is_zero():
+            if b.coefficients[-1] == FieldElement(0):
+                raise ValueError("Leading coefficient of divisor is zero during GCD computation.")
+            b_leading_coeff = b.coefficients[-1]
+            b = PolyFieldElement([coeff / b_leading_coeff for coeff in b.coefficients])
+            a, b = b, a % b  # Modulo-Operation
+        return a
 
-        return PolyFieldElement(sqrt_coeffs)
+    def differentiate(self):
+
+        # Ableitung im Galois-Feld: Nur Koeffizienten mit ungeradem Exponenten bleiben
+        return PolyFieldElement([self.coefficients[i] for i in range(1, len(self.coefficients)) if i % 2 == 1])
     
     
     
+    def sff(self):
+
+        factors = []
+        f = self
+        e = 1
+
+        f_prime = f.differentiate()
+        if f_prime.is_zero():
+            raise ValueError("The derivative of the polynomial is zero, cannot compute SFF.")
+
+        c = PolyFieldElement.gcd(f, f_prime)
+        f = f // c
+
+        while not f.is_one():
+            y = PolyFieldElement.gcd(f, c)
+            if not y.is_one():
+                factors.append((y, e))
+                f = f // y
+            e += 1
+            c = c // y
+
+        if not c.is_one():
+            sqrt_c = c.sqrt()
+            for factor, multiplicity in sqrt_c.sff():
+                factors.append((factor, multiplicity * 2))
+
+        return factors
+
+
+    def is_one(self):
+        return len(self.coefficients) == 1 and self.coefficients[0] == FieldElement(1)
+
     def is_zero(self):
      
         return all(coeff == FieldElement(0) for coeff in self.coefficients)

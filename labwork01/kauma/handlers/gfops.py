@@ -58,3 +58,4 @@ def gfdiv(arguements):
 
     result = base64.b64encode(result_block_bytes).decode("utf-8")
     return {"q": result}
+
