@@ -1,7 +1,7 @@
 from utils.bitops import encode_base64, decode_base64, xor_bytes
 from field_element import FieldElement
 from utils.aes128 import aes128_encrypt, aes128_decrypt
-from handler.sea128 import SEA128Handler
+from handlers.sea128 import SEA128Handler
 
 
 class GCMHandler: 

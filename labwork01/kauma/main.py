@@ -3,13 +3,13 @@ import sys
 import base64
 from field_element import FieldElement
 from concurrent.futures import ThreadPoolExecutor
-from handler.conversions import poly2block, block2poly
-from handler.gfops import gfmul, gfdiv
-from handler.sea128 import SEA128Handler
-from handler.fde import FDEHandler
-from handler.gcm import GCMHandler
-from handler.padding_attack import decrypt_ciphertext
-from handler.gfpolyops import gfpoly_add, gfpoly_divmod, gfpoly_mul, gfpoly_pow, gfpoly_powmod
+from handlers.conversions import poly2block, block2poly
+from handlers.gfops import gfmul, gfdiv
+from handlers.sea128 import SEA128Handler
+from handlers.fde import FDEHandler
+from handlers.gcm import GCMHandler
+from handlers.padding_attack import decrypt_ciphertext
+from handlers.gfpolyops import gfpoly_add, gfpoly_divmod, gfpoly_mul, gfpoly_pow, gfpoly_powmod
 
 sea128 = SEA128Handler()
 xex = FDEHandler()
