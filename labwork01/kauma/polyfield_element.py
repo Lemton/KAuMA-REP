@@ -34,39 +34,9 @@ class PolyFieldElement:
 
         return PolyFieldElement(self.remove_leading_zeros(result_coefficients))
     def __floordiv__(self, other):
-        if not isinstance(other, PolyFieldElement):
-            raise TypeError("Operand must be of type PolyFieldElement")
-        if other.is_zero():
-            raise ZeroDivisionError("Cannot divide by zero polynomial")
-
-        # Kopiere die Koeffizienten des Dividenden und initialisiere den Quotienten
-        remainder = self.coefficients[:]
-        quotient = [FieldElement(0)] * (len(remainder) - len(other.coefficients) + 1)
-
-        divisor_degree = len(other.coefficients) - 1
-        divisor_leading_coeff = other.coefficients[-1]
-
-        while len(remainder) >= len(other.coefficients):
-            # Gradunterschied zwischen Divisor und aktuellem Rest
-            degree_diff = len(remainder) - len(other.coefficients)
-            # Führender Term der Division (Rest / Divisor-Leading-Coeff)
-            leading_term = remainder[-1] / divisor_leading_coeff
-            quotient[degree_diff] = leading_term
-
-            # Subtrahiere (Divisor * leading_term) vom Rest
-            for i in range(len(other.coefficients)):
-                remainder[i + degree_diff] ^= other.coefficients[i] * leading_term
-
-            # Entferne führende Null schnell (Pointer-Manipulation)
-            while remainder and remainder[-1] == FieldElement(0):
-                remainder.pop()
-
-        # Entferne führende Null im Quotienten (falls nötig)
-        while quotient and quotient[-1] == FieldElement(0):
-            quotient.pop()
-
-        return PolyFieldElement(quotient)
-
+        
+        quotient, _ = divmod(self,other)
+        return quotient
 
     def __pow__(self, exponent):
         if exponent < 0:
@@ -228,20 +198,21 @@ class PolyFieldElement:
         return a
 
     def differentiate(self):
+        
+        result = self.coefficients
 
-        # Ableitung im Galois-Feld: Nur Koeffizienten mit ungeradem Exponenten bleiben
-        result = []
+        if len(self.coefficients) == 1:
+            result[0] = [FieldElement(0)]
 
-        for i in range(1, len(self.coefficients)):
-            if i % 2 == 1:
-                result.append(self.coefficients[i])
-            else:
-                result.append(FieldElement(0))
+        else:
+            result.pop(0)
 
-        erg = PolyFieldElement(result)
-        erg.remove_leading_zeros(result)
+            for i in range(1,len(result), 2):
+                result[i] = FieldElement(0)
+        
+        result = self.remove_leading_zeros(result)
+        return PolyFieldElement(result)
 
-        return erg
     
     def sqrt(self):
         
