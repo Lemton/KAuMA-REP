@@ -236,7 +236,7 @@ class PolyFieldElement:
         f_prime = f.differentiate()
         
         
-        print(f"Hier ist die Ableitung::::{f_prime} ::::")
+
         if f_prime.is_zero():
             raise ValueError("The derivative of the polynomial is zero, cannot compute SFF.")
 

@@ -210,7 +210,7 @@ def gfpoly_diff(arguments):
     # Ergebnis zurück in Base64-Blöcke umwandeln
     derived_encoded = [encode_base64(FieldElement.gcm_to_block(coeff.value)) for coeff in derived_poly.coefficients]
 
-    return {"F": derived_encoded}
+    return {"F'": derived_encoded}
 
 
 def gfpoly_factor_sff(arguments):
