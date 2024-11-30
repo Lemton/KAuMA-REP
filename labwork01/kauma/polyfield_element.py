@@ -221,9 +221,18 @@ class PolyFieldElement:
         # Ableitung im Galois-Feld: Nur Koeffizienten mit ungeradem Exponenten bleiben
         return PolyFieldElement([self.coefficients[i] for i in range(1, len(self.coefficients)) if i % 2 == 1])
     
-    
-    
-    def sff(self):
+    def sqrt(self):
+        
+        result = []
+        for i, coeff in enumerate(self.coefficients):
+            if i % 2 == 0:
+                result.append(coeff.sqrt())
+            else:
+                pass
+        
+        return PolyFieldElement(result)
+
+    def sff(self):  
 
         factors = []
         f = self

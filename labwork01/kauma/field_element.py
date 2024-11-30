@@ -103,9 +103,10 @@ class FieldElement:
             exponent >>= 1
 
         return result
+    
+    
     def sqrt(self):
-
-        # Hier wird angenommen, dass die Quadratwurzel im Galois-Feld durch Potenzierung berechnet wird
+        
         return self ** (2**127)
 
     def __str__(self):

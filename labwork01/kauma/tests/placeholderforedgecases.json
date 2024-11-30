@@ -1,16 +1,14 @@
 {
-        "action": "gfpoly_powmod",
+        "action": "gfpoly_sqrt",
         "arguments": {
-        "A": [
-        "JAAAAAAAAAAAAAAAAAAAAA==",
-        "wAAAAAAAAAAAAAAAAAAAAA==",
-        "ACAAAAAAAAAAAAAAAAAAAA=="
-        ],
-        "M": [
-                "JAAAAAAAAAAAAAAAAAAAAA==",
-                "wAAAAAAAAAAAAAAAAAAAAA==",
-                "ACAAAAAAAAAAAAAAAAAAAA=="
-        ],
-        "k": 3
+        "Q": [
+        "5TxUxLHO1lHE/rSFquKIAg==",
+        "AAAAAAAAAAAAAAAAAAAAAA==",
+        "0DEUJYdHlmd4X7nzzIdcCA==",
+        "AAAAAAAAAAAAAAAAAAAAAA==",
+        "PKUa1+JHTxHE8y3LbuKIIA==",
+        "AAAAAAAAAAAAAAAAAAAAAA==",
+        "Ds96KiAKKoigKoiKiiKAiA=="
+        ]
         }
         }
