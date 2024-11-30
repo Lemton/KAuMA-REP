@@ -38,32 +38,40 @@ class FieldElement:
         return FieldElement(result)
         
     def __invert__(self):
+       
         if self.value == 0:
             raise ZeroDivisionError("Cannot invert zero in a finite field")
 
-        r0, r1 = self.MODULO, self.value  # Initialisiere Rest-Polynome
+        r0, r1 = self.MODULO, self.value  # Initialisiere Restwerte
         t0, t1 = 0, 1  # Initialisiere Koeffizienten für das Inverse
 
         while r1 != 0:
-            # Sicherstellen, dass r0 >= r1
+            # Gradunterschied zwischen r0 und r1 berechnen
             if r0 < r1:
-                r0, r1 = r1, r0
-                t0, t1 = t1, t0  # Tausche auch die Koeffizienten
-            
-            # Gradunterschied berechnen
+                r0, r1 = r1, r0  # Sicherstellen, dass r0 >= r1
+                t0, t1 = t1, t0
+
             q = r0.bit_length() - r1.bit_length()
 
-            # Aktualisiere Reste (wie ggT)
-            r0, r1 = r1, r0 ^ (r1 << q)
+            # Schutz vor negativen Shifts
+            if q < 0:
+                raise ValueError("Unexpected negative shift count during inverse computation")
 
-            # Aktualisiere die Koeffizienten für das Inverse
+            # Aktualisiere Reste und Koeffizienten
+            r0, r1 = r1, r0 ^ (r1 << q)
             t0, t1 = t1, t0 ^ (t1 << q)
 
-        # Prüfen, ob ggT 1 ist (Invertierbarkeit)
+            # Prüfen, ob r1 Null wird, um Endlosschleifen zu vermeiden
+            if r1 == 0:
+                break
+
+        # Prüfen, ob ggT 1 ist
         if r0 != 1:
             raise ZeroDivisionError("No multiplicative inverse exists")
 
         return FieldElement(t0)
+
+
     def __truediv__(self, other):
         """
         Überlädt den /-Operator, um die Division von Feld-Elementen zu ermöglichen.

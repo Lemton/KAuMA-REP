@@ -134,6 +134,7 @@ class PolyFieldElement:
             base = (base * base) % modulus
             exponent //= 2
 
+        result.remove_leading_zeros(result.coefficients)
         return result
 
             
@@ -198,18 +199,18 @@ class PolyFieldElement:
         return a
 
     def differentiate(self):
-        
+
         result = self.coefficients
 
         if len(self.coefficients) == 1:
-            result[0] = [FieldElement(0)]
+            result = [FieldElement(0)]
 
         else:
             result.pop(0)
 
             for i in range(1,len(result), 2):
                 result[i] = FieldElement(0)
-        
+
         result = self.remove_leading_zeros(result)
         return PolyFieldElement(result)
 
@@ -225,31 +226,38 @@ class PolyFieldElement:
         
         return PolyFieldElement(result)
 
-    def sff(self):  
-
+    def sff(self):
+      
         factors = []
         f = self
-        e = 1
+        exponent = 1
 
+        # Berechne die Ableitung des Polynoms
         f_prime = f.differentiate()
+        
+        
+        print(f"Hier ist die Ableitung::::{f_prime} ::::")
         if f_prime.is_zero():
             raise ValueError("The derivative of the polynomial is zero, cannot compute SFF.")
 
+        # Berechne den ggT von f und f'
         c = PolyFieldElement.gcd(f, f_prime)
         f = f // c
 
+        # Haupt-Schleife zur Berechnung der Faktoren
         while not f.is_one():
             y = PolyFieldElement.gcd(f, c)
-            if not y.is_one():
-                factors.append((y, e))
-                f = f // y
-            e += 1
-            c = c // y
+            if f != y:  # Prüfen, ob y tatsächlich ein neuer Faktor ist
+                factors.append((f // y, exponent))
+            f = y  # Aktualisiere f
+            c = c // y  # Aktualisiere c
+            exponent += 1
 
+        # Rekursive Behandlung des Restes c
         if not c.is_one():
             sqrt_c = c.sqrt()
             for factor, multiplicity in sqrt_c.sff():
-                factors.append((factor, multiplicity * 2))
+                factors.append((factor, multiplicity * 2))  # Exponenten verdoppeln
 
         return factors
 
