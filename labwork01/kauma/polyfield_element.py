@@ -113,11 +113,11 @@ class PolyFieldElement:
                 remainder[i + degree_diff] ^= other.coefficients[i] * leading_term
 
             # Entferne führende Null
-            while remainder and remainder[-1] == FieldElement(0):
+            while len(remainder) > 1 and remainder[-1] == FieldElement(0):
                 remainder.pop()
 
         # Entferne führende Null im Quotienten (falls nötig)
-        while quotient and quotient[-1] == FieldElement(0):
+        while len(quotient) > 1 and quotient[-1] == FieldElement(0):
             quotient.pop()
 
         return PolyFieldElement(quotient), PolyFieldElement(remainder)
@@ -129,6 +129,15 @@ class PolyFieldElement:
 
         if exponent < 0:
             raise ValueError("Exponent must be non-negative")
+
+        if self == PolyFieldElement([FieldElement(0)]) and exponent == 0 :
+            return PolyFieldElement([FieldElement(1)])
+
+        elif self == PolyFieldElement([FieldElement(0)]) and exponent != 0:
+            return self
+
+        if self == PolyFieldElement([FieldElement(1)]):
+            return self
 
         # Startwert für das Ergebnis ist das neutrale Element (1)
         result = PolyFieldElement([FieldElement(1)])
@@ -146,6 +155,7 @@ class PolyFieldElement:
 
         return result
 
+            
     
     def __mod__(self, other):
         if not isinstance(other, PolyFieldElement):
@@ -195,12 +205,6 @@ class PolyFieldElement:
         # Wenn beide Polynome vollständig gleich sind, ist keins kleiner
         return False
     
-    def sqrt(self):
-
-        result_coeffs = []
-        for i in range(0, len(self.coefficients), 2):  # Nur gerade Exponenten behalten
-            result_coeffs.append(self.coefficients[i])
-        return PolyFieldElement(result_coeffs)
         
     def gcd(a, b):
 
