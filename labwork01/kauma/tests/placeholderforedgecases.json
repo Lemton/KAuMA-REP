@@ -1,14 +1,51 @@
 {
-        "action": "gfpoly_sqrt",
-        "arguments": {
-        "Q": [
-        "5TxUxLHO1lHE/rSFquKIAg==",
-        "AAAAAAAAAAAAAAAAAAAAAA==",
-        "0DEUJYdHlmd4X7nzzIdcCA==",
-        "AAAAAAAAAAAAAAAAAAAAAA==",
-        "PKUa1+JHTxHE8y3LbuKIIA==",
-        "AAAAAAAAAAAAAAAAAAAAAA==",
-        "Ds96KiAKKoigKoiKiiKAiA=="
-        ]
+        "testcases": {
+          "gfpoly-divmod-2": {
+            "action": "gfpoly_divmod",
+            "arguments": {
+              "A":
+                [
+                  "AAAAAAAAAAAAAAAAAAAAAA==",
+                  "gAAAAAAAAAAAAAAAAAAAAA==",
+                  "QAAAAAAAAAAAAAAAAAAAAA=="
+                ],
+      
+              "B":
+                [
+                  "gAAAAAAAAAAAAAAAAAAAAA=="
+                ]
+            }
+          },
+          "gfpoly-divmod-a-smaller-b": {
+            "action": "gfpoly_divmod",
+            "arguments": {
+              "A":
+                [
+                  "gAAAAAAAAAAAAAAAAAAAAA==",
+                  "QAAAAAAAAAAAAAAAAAAAAA=="
+                ],
+      
+              "B":
+                [
+                  "wAAAAAAAAAAAAAAAAAAAAA==",
+                  "IAAAAAAAAAAAAAAAAAAAAA==",
+                  "oAAAAAAAAAAAAAAAAAAAAA=="
+                ]
+            }
+          },
+          "gfpoly-divmod-standardtest":{
+                "action": "gfpoly_divmod",
+                "arguments": {
+                "A": [
+                "JAAAAAAAAAAAAAAAAAAAAA==",
+                "wAAAAAAAAAAAAAAAAAAAAA==",
+                "ACAAAAAAAAAAAAAAAAAAAA=="
+                ],
+                "B": [
+                "0AAAAAAAAAAAAAAAAAAAAA==",
+                "IQAAAAAAAAAAAAAAAAAAAA=="
+                ]
+                }
+                }
         }
-        }
+      }

@@ -88,6 +88,8 @@ class PolyFieldElement:
         return result
     
     def __divmod__(self, other):
+        
+        
         if other.is_zero():
             raise ZeroDivisionError("Cannot divide by zero polynomial")
 
@@ -95,13 +97,18 @@ class PolyFieldElement:
         remainder = self.coefficients[:]
         quotient = [FieldElement(0)] * (len(remainder) - len(other.coefficients) + 1)
 
-        divisor_degree = len(other.coefficients) - 1
+        
         divisor_leading_coeff = other.coefficients[-1]
 
         if divisor_leading_coeff == FieldElement(0):
             raise ZeroDivisionError("Leading coefficient of divisor is zero")
 
+
+
+
         while len(remainder) >= len(other.coefficients):
+            
+            
             # Gradunterschied zwischen Divisor und aktuellem Rest
             degree_diff = len(remainder) - len(other.coefficients)
             # Führender Term der Division (Rest / Divisor-Leading-Coeff)
@@ -112,31 +119,35 @@ class PolyFieldElement:
             for i in range(len(other.coefficients)):
                 remainder[i + degree_diff] ^= other.coefficients[i] * leading_term
 
+          
+
             # Entferne führende Null
             while len(remainder) > 1 and remainder[-1] == FieldElement(0):
                 remainder.pop()
 
+            if remainder[-1] == FieldElement(0):
+                break
         # Entferne führende Null im Quotienten (falls nötig)
         while len(quotient) > 1 and quotient[-1] == FieldElement(0):
             quotient.pop()
+
+        if len(quotient) == 0:
+            quotient = [FieldElement(0)]    
 
         return PolyFieldElement(quotient), PolyFieldElement(remainder)
 
     def powmod(self, exponent, modulus):
 
-        if not isinstance(modulus, PolyFieldElement):
-            raise TypeError("Modulus must be of type PolyFieldElement")
-
         if exponent < 0:
             raise ValueError("Exponent must be non-negative")
 
-        if self == PolyFieldElement([FieldElement(0)]) and exponent == 0 :
+        elif self == PolyFieldElement([FieldElement(0)]) and exponent == 0 :
             return PolyFieldElement([FieldElement(1)])
 
         elif self == PolyFieldElement([FieldElement(0)]) and exponent != 0:
             return self
 
-        if self == PolyFieldElement([FieldElement(1)]):
+        elif self == PolyFieldElement([FieldElement(1)]):
             return self
 
         # Startwert für das Ergebnis ist das neutrale Element (1)
@@ -219,7 +230,18 @@ class PolyFieldElement:
     def differentiate(self):
 
         # Ableitung im Galois-Feld: Nur Koeffizienten mit ungeradem Exponenten bleiben
-        return PolyFieldElement([self.coefficients[i] for i in range(1, len(self.coefficients)) if i % 2 == 1])
+        result = []
+
+        for i in range(1, len(self.coefficients)):
+            if i % 2 == 1:
+                result.append(self.coefficients[i])
+            else:
+                result.append(FieldElement(0))
+
+        erg = PolyFieldElement(result)
+        erg.remove_leading_zeros(result)
+
+        return erg
     
     def sqrt(self):
         
