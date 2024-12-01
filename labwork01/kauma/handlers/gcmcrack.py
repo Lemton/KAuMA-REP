@@ -24,7 +24,7 @@ def ddf(f):
         d+=1
     
     if not fstar.is_one():
-        z.append((fstar,len(fstar.coefficients)))
+        z.append((fstar,len(fstar.coefficients)-1))
     
     elif len(z) == 0:
         z.append((f,1))
