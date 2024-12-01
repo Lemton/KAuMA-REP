@@ -165,17 +165,12 @@ def gfpoly_make_monic(arguments):
     # Umwandlung der Koeffizienten von Base64 zu FieldElementen
     a_coeffs = [FieldElement.gcm_from_block(decode_base64(a)) for a in poly_a_b64coeffs]
 
-    # Erstellung des PolyFieldElements
-    poly_a = PolyFieldElement(a_coeffs)
+    a_poly = PolyFieldElement(a_coeffs) 
 
-    # Führenden Koeffizienten extrahieren
-    leading_coeff = poly_a.coefficients[-1]
-
-    # Normierung des Polynoms
-    monic_poly = PolyFieldElement([coeff / leading_coeff for coeff in poly_a.coefficients])
+    a_monic = a_poly.monic()
 
     # Ergebnis zurück in Base64-Blöcke umwandeln
-    monic_encoded = [encode_base64(FieldElement.gcm_to_block(coeff.value)) for coeff in monic_poly.coefficients]
+    monic_encoded = [encode_base64(FieldElement.gcm_to_block(coeff.value)) for coeff in a_monic.coefficients]
 
     return {"A*": monic_encoded}
 

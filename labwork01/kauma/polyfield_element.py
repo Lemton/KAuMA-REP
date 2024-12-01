@@ -238,4 +238,12 @@ class PolyFieldElement:
         
         return PolyFieldElement(self.coefficients.copy())
     
-    
+    def monic(self):
+
+        # Führenden Koeffizienten extrahieren
+        leading_coeff = self.coefficients[-1]
+
+        # Normierung des Polynoms
+        monic_poly = PolyFieldElement([coeff / leading_coeff for coeff in self.coefficients])
+
+        return monic_poly

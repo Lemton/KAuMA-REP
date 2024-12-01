@@ -1,6 +1,6 @@
 from field_element import FieldElement
 from polyfield_element import PolyFieldElement
-from utils.bitops import decode_base64, encode_base64
+from utils.bitops import *
 import random
 from handlers.gfpolyops import *
 from handlers.gcm import *
@@ -115,28 +115,120 @@ def sff(f):
 
 
 def gcm_crack(arguments):
-        # Extrahiere und dekodiere den Nonce
+    # Extrahiere und dekodiere den Nonce
     nonce = FieldElement.gcm_from_block(decode_base64(arguments.get("nonce")))
 
     # Extrahiere m1
-    c1 = split_into_blocks(decode_base64(arguments["m1"]["ciphertext"]))
-    ad1 = split_into_blocks(decode_base64(arguments["m1"]["associated_data"]))
-    tag1 = FieldElement.gcm_from_block(decode_base64(arguments["m1"]["tag"]))
+    c1 = decode_base64(arguments["m1"]["ciphertext"])
+    ad1 = decode_base64(arguments["m1"]["associated_data"])
+    tag1 = decode_base64(arguments["m1"]["tag"])
+    c1_org = [c1[i:i + 16] for i in range(0, len(c1), 16)]
+    ad1_org = [ad1[i:i + 16] for i in range(0, len(ad1), 16)]
+
 
     # Extrahiere m2
-    c2 = split_into_blocks(decode_base64(arguments["m2"]["ciphertext"]))
-    ad2 = split_into_blocks(decode_base64(arguments["m2"]["associated_data"]))
-    tag2 = FieldElement.gcm_from_block(decode_base64(arguments["m2"]["tag"]))
+    c2 = decode_base64(arguments["m2"]["ciphertext"])
+    ad2 = decode_base64(arguments["m2"]["associated_data"])
+    tag2 = decode_base64(arguments["m2"]["tag"])
+
+
 
     # Extrahiere m3
-    c3 = split_into_blocks(decode_base64(arguments["m3"]["ciphertext"]))
-    ad3 = split_into_blocks(decode_base64(arguments["m3"]["associated_data"]))
-    tag3 = FieldElement.gcm_from_block(decode_base64(arguments["m3"]["tag"]))
+    c3 = decode_base64(arguments["m3"]["ciphertext"])
+    ad3 = decode_base64(arguments["m3"]["associated_data"])
+    tag3 = decode_base64(arguments["m3"]["tag"])
+
+    c3_org = [c3[i:i + 16] for i in range(0, len(c3), 16)]
+    ad3_org = [ad3[i:i + 16] for i in range(0, len(ad3), 16)]
+
 
     # Extrahiere Forgery
-    cf = split_into_blocks(decode_base64(arguments["forgery"]["ciphertext"]))
-    adf = split_into_blocks(decode_base64(arguments["forgery"]["associated_data"]))
+    cf = decode_base64(arguments["forgery"]["ciphertext"])
+    adf = decode_base64(arguments["forgery"]["associated_data"])
+
+    cf_org = [cf[i:i + 16] for i in range(0, len(cf), 16)]
+    adf_org = [adf[i:i + 16] for i in range(0, len(adf), 16)]
 
     # GHASH-Polynom berechnen (T1 ⊕ T2 = GHASH Diff)
     # GHASH-Polynom berechnen
+
+    L1 = (len(ad1) * 8).to_bytes(8, byteorder='big') + (len(c1) * 8).to_bytes(8, byteorder='big')
+    L2 = (len(ad2) * 8).to_bytes(8, byteorder='big') + (len(c2) * 8).to_bytes(8, byteorder='big')
+    L3 = (len(ad3) * 8).to_bytes(8, byteorder='big') + (len(c3) * 8).to_bytes(8, byteorder='big')
+    LF = (len(adf) * 8).to_bytes(8, byteorder='big') + (len(cf) * 8).to_bytes(8, byteorder='big')
+
+    while len(c1) % 16 != 0:
+        c1 += b'\x00' 
+
     
+    while len(c2) % 16 != 0:
+        c2 += b'\x00'
+        
+    while len(ad1) % 16 != 0:
+        ad1 += b'\x00'
+    
+    while len(ad2) % 16 != 0:
+        ad2 += b'\x00'
+    
+    m1 = ad1 + c1 + L1 + tag1
+
+    m2 = ad2 + c2 + L2 + tag2
+
+    len_m1 = len(m1)
+
+    len_m2 = len(m2)
+
+    max_len = max(len(m1), len(m2))
+
+    m1_padded = b'\x00' * (max_len - len_m1) + m1
+
+    
+    m2_padded =  b'\x00' * (max_len - len_m2) + m2 
+
+    
+    mh = xor_bytes(m1_padded, m2_padded)
+
+    coeffs = [ FieldElement.gcm_from_block(mh[i:i+16]) for i in range(0, len(mh), 16)]
+
+    coeffs.reverse()
+
+    ghash_poly = PolyFieldElement(coeffs)
+
+    ghash_poly_monic = divmod(ghash_poly, PolyFieldElement([ghash_poly.coefficients[-1]]))[0]
+    
+    canditates = anton_zassenhaus(ghash_poly_monic)
+
+    for canditate in canditates:
+        
+        auth_candidate = bytes(FieldElement.gcm_to_block(canditate.coefficients[0].value))
+        
+        eky0 = xor_bytes(bytes(ghash(auth_candidate,ad1_org, c1_org,  L1 )),  tag1)
+        auth_tag = xor_bytes(bytes(ghash(auth_candidate, ad3_org, c3_org, L3)), eky0) 
+       
+        if auth_tag == tag3:
+            
+            auth_tag_forge = xor_bytes(bytes(ghash(auth_candidate, adf_org, cf_org, LF)), eky0) 
+            
+            return {"tag": encode_base64(auth_tag_forge),"H": encode_base64(auth_candidate), "mask": encode_base64(eky0)}
+
+
+
+
+def anton_zassenhaus(poly):
+
+    zerospots = []
+    square_free_poly = sff(poly)
+   
+    for factor, _  in square_free_poly:  
+        distinct_degree_factorization = ddf(factor)
+        for factor, exponent in distinct_degree_factorization:
+            if exponent == len(factor.coefficients)-1:
+                zerospots.append(factor)
+            else: 
+                equal_degree_factorization = edf(factor, 1) 
+                for i in equal_degree_factorization:
+                    zerospots.append(i)
+    return zerospots
+
+
+
