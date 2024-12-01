@@ -236,6 +236,6 @@ class PolyFieldElement:
 
     def copy(self):
         
-        return copy.deepcopy(self)
+        return PolyFieldElement(self.coefficients.copy())
     
     
