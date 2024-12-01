@@ -1,51 +1,10 @@
 {
-        "testcases": {
-          "gfpoly-divmod-2": {
-            "action": "gfpoly_divmod",
-            "arguments": {
-              "A":
-                [
-                  "AAAAAAAAAAAAAAAAAAAAAA==",
-                  "gAAAAAAAAAAAAAAAAAAAAA==",
-                  "QAAAAAAAAAAAAAAAAAAAAA=="
-                ],
-      
-              "B":
-                [
-                  "gAAAAAAAAAAAAAAAAAAAAA=="
-                ]
-            }
-          },
-          "gfpoly-divmod-a-smaller-b": {
-            "action": "gfpoly_divmod",
-            "arguments": {
-              "A":
-                [
-                  "gAAAAAAAAAAAAAAAAAAAAA==",
-                  "QAAAAAAAAAAAAAAAAAAAAA=="
-                ],
-      
-              "B":
-                [
-                  "wAAAAAAAAAAAAAAAAAAAAA==",
-                  "IAAAAAAAAAAAAAAAAAAAAA==",
-                  "oAAAAAAAAAAAAAAAAAAAAA=="
-                ]
-            }
-          },
-          "gfpoly-divmod-standardtest":{
-                "action": "gfpoly_divmod",
-                "arguments": {
-                "A": [
-                "JAAAAAAAAAAAAAAAAAAAAA==",
-                "wAAAAAAAAAAAAAAAAAAAAA==",
-                "ACAAAAAAAAAAAAAAAAAAAA=="
-                ],
-                "B": [
-                "0AAAAAAAAAAAAAAAAAAAAA==",
-                "IQAAAAAAAAAAAAAAAAAAAA=="
-                ]
-                }
-                }
-        }
-      }
+  "action": "gfpoly_factor_sff",
+  "arguments": {
+  "F": [
+  "cndUCFI1xaZi0z+DHsvJ6Q==",
+  "Li0z+DHsvJ3eTuqBCka4pA==",
+  "AAAAAAAAAAAAAAAAAAAAAQ=="
+  ]
+  }
+  }

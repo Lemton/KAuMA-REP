@@ -214,30 +214,69 @@ def gfpoly_diff(arguments):
 
 
 def gfpoly_factor_sff(arguments):
-    poly_f_b64coeffs = arguments.get("F", [])
+    poly_f_b64coeffs = arguments.get("F")
 
     # Umwandlung der Koeffizienten von Base64 zu FieldElementen
     f_coeffs = [FieldElement.gcm_from_block(decode_base64(f)) for f in poly_f_b64coeffs]
 
     # Erstellung des PolyFieldElements
     poly_f = PolyFieldElement(f_coeffs)
-
+    
     # Square-Free Factorization durchführen
-    factors = poly_f.sff()
+    factors = sff(poly_f)
 
-    # Ergebnisse Base64-kodiert zurückgeben
-    result = [
-        {
-            "factor": [
-                encode_base64(FieldElement.gcm_to_block(coeff.value))
-                for coeff in factor.coefficients
-            ],
-            "multiplicity": multiplicity
-        }
-        for factor, multiplicity in factors
-    ]
+    return {
+        "factors": [
+            {
+                "factor": [
+                    encode_base64(FieldElement.gcm_to_block(coeff.value))
+                    for coeff in factor.coefficients
+                ],
+                "exponent": multiplicity
+            }
+            for factor, multiplicity in factors
+        ]
+    }
 
-    # Rückgabe sortieren
-    result_sorted = sorted(result, key=lambda x: x["factor"])
+def sff(f):
+        """
+        Implementiert den Square-Free Factorization Algorithmus (SFF) im Galois-Feld GF(2^m).
+        """
+        # Berechne c = gcd(f, f')
+        f_prime = f.differentiate()
+        print(f"f_prime{f_prime}")
+        c = PolyFieldElement.gcd(f, f_prime)
+        # f ← f / c
+        print(f"f: {f}")
+        f = f // c
+        print(f"c: {c}")
+        # Initialisiere z ← ∅ und e ← 1
+        z = []
+        e = 1
+        print(f)
+        # while f ≠ 1 do
+        while not f.is_one():
+            
+            # y ← gcd(f, c)
+            y = PolyFieldElement.gcd(f, c)
+            # if f ≠ y then
+            if f != y:
+                # z ← z ∪ {(f / y, e)}
+                z.append((f // y, e))
+            # f ← y
+            f = y
+            # c ← c / y
+            c = c // y
+            # e ← e + 1
+            e += 1
 
-    return {"factors": result_sorted}
+        
+        # if c ≠ 1 then
+        if not c.is_one():
+            print("go")
+            for f_star, e_star in sff(c.sqrt()):
+                # z ← z ∪ {(f*, 2e*)}
+                z.append((f_star, e_star*2))
+
+        # return z
+        return sorted(z)

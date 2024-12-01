@@ -3,8 +3,8 @@
     "testcase_1": {
       "action": "poly2block",
       "arguments": {
-        "semantic": "xex",
-        "coefficients": [12, 127, 9, 0]
+        "semantic": "gcm",
+        "coefficients": [5, 3, 1]
       }
     },
     "testcase_2": {

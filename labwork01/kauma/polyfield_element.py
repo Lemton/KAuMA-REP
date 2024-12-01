@@ -1,5 +1,6 @@
 from field_element import FieldElement
 from itertools import zip_longest
+import copy
 
 class PolyFieldElement:
 
@@ -33,6 +34,7 @@ class PolyFieldElement:
                 result_coefficients[i + j] ^= coeff_a * coeff_b  # XOR statt Addition im GF(2^n)
 
         return PolyFieldElement(self.remove_leading_zeros(result_coefficients))
+    
     def __floordiv__(self, other):
         
         quotient, _ = divmod(self,other)
@@ -111,14 +113,6 @@ class PolyFieldElement:
         if exponent < 0:
             raise ValueError("Exponent must be non-negative")
 
-        elif self == PolyFieldElement([FieldElement(0)]) and exponent == 0 :
-            return PolyFieldElement([FieldElement(1)])
-
-        elif self == PolyFieldElement([FieldElement(0)]) and exponent != 0:
-            return self
-
-        elif self == PolyFieldElement([FieldElement(1)]):
-            return self
 
         # Startwert für das Ergebnis ist das neutrale Element (1)
         result = PolyFieldElement([FieldElement(1)])
@@ -134,7 +128,6 @@ class PolyFieldElement:
             base = (base * base) % modulus
             exponent //= 2
 
-        result.remove_leading_zeros(result.coefficients)
         return result
 
             
@@ -199,10 +192,10 @@ class PolyFieldElement:
         return a
 
     def differentiate(self):
+        diff = copy.deepcopy(self)
+        result = diff.coefficients
 
-        result = self.coefficients
-
-        if len(self.coefficients) == 1:
+        if len(diff.coefficients) == 1:
             result = [FieldElement(0)]
 
         else:
@@ -211,7 +204,8 @@ class PolyFieldElement:
             for i in range(1,len(result), 2):
                 result[i] = FieldElement(0)
 
-        result = self.remove_leading_zeros(result)
+        result = diff.remove_leading_zeros(result)
+
         return PolyFieldElement(result)
 
     
@@ -226,42 +220,6 @@ class PolyFieldElement:
         
         return PolyFieldElement(result)
 
-    def sff(self):
-      
-        factors = []
-        f = self
-        exponent = 1
-
-        # Berechne die Ableitung des Polynoms
-        f_prime = f.differentiate()
-        
-        
-
-        if f_prime.is_zero():
-            raise ValueError("The derivative of the polynomial is zero, cannot compute SFF.")
-
-        # Berechne den ggT von f und f'
-        c = PolyFieldElement.gcd(f, f_prime)
-        f = f // c
-
-        # Haupt-Schleife zur Berechnung der Faktoren
-        while not f.is_one():
-            y = PolyFieldElement.gcd(f, c)
-            if f != y:  # Prüfen, ob y tatsächlich ein neuer Faktor ist
-                factors.append((f // y, exponent))
-            f = y  # Aktualisiere f
-            c = c // y  # Aktualisiere c
-            exponent += 1
-
-        # Rekursive Behandlung des Restes c
-        if not c.is_one():
-            sqrt_c = c.sqrt()
-            for factor, multiplicity in sqrt_c.sff():
-                factors.append((factor, multiplicity * 2))  # Exponenten verdoppeln
-
-        return factors
-
-
     def is_one(self):
         return len(self.coefficients) == 1 and self.coefficients[0] == FieldElement(1)
 
@@ -272,3 +230,5 @@ class PolyFieldElement:
 
     def __repr__(self):
         return f"PolyFieldElement(coefficients={self.coefficients})"
+    
+
