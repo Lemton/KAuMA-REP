@@ -3,6 +3,7 @@ from polyfield_element import PolyFieldElement
 from utils.bitops import decode_base64, encode_base64
 import random
 
+
 def ddf(f): 
     q = 2**128
     z = []
@@ -36,17 +37,17 @@ def ddf(f):
 
 def edf(f, d):
     q = 2 ** 128
-    n = (len(f.coefficients)-1) / d
+    n = (len(f.coefficients)-1) // d
     z = [ f ]
     while len(z) < n:
         h = random_poly(len(f.coefficients)-1)
         g = h.powmod((((q** d) - 1)  // 3), f) + PolyFieldElement([FieldElement(1)]).powmod(1, f)
 
         for u in z:
-            if len(u.coefficients)-1 > d:
+            if len(u.coefficients) > 0 and len(u.coefficients) - 1 > d:
                 j = PolyFieldElement.gcd(u, g)
+            
                 if not j.is_one() and (j != u):
-                    # u is factored
                     z.remove(u)
                     z.append(j)
                     z.append(u // j)
@@ -54,8 +55,8 @@ def edf(f, d):
 
 
 def random_poly(max_deg):
+    
     rand_poly = []
-
     deg = random.randint(1, max_deg-1)
     for i in range (deg):
         poly = FieldElement(random.randint(1, 2**128))
