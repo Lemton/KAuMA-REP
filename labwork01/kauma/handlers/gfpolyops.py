@@ -244,16 +244,16 @@ def sff(f):
         """
         # Berechne c = gcd(f, f')
         f_prime = f.differentiate()
-        print(f"f_prime{f_prime}")
+        
         c = PolyFieldElement.gcd(f, f_prime)
         # f ← f / c
-        print(f"f: {f}")
+        
         f = f // c
-        print(f"c: {c}")
+        
         # Initialisiere z ← ∅ und e ← 1
         z = []
         e = 1
-        print(f)
+        
         # while f ≠ 1 do
         while not f.is_one():
             
@@ -273,7 +273,6 @@ def sff(f):
         
         # if c ≠ 1 then
         if not c.is_one():
-            print("go")
             for f_star, e_star in sff(c.sqrt()):
                 # z ← z ∪ {(f*, 2e*)}
                 z.append((f_star, e_star*2))
