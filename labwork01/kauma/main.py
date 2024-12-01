@@ -9,6 +9,7 @@ from handlers.fde import FDEHandler
 from handlers.gcm import GCMHandler
 from handlers.padding_attack import decrypt_ciphertext
 from handlers.gfpolyops import *
+from handlers.gcmcrack import *
 
 
 sea128 = SEA128Handler()
@@ -37,7 +38,8 @@ ACTION_MAP = {
     "gfpoly_diff": gfpoly_diff,
     "gfpoly_factor_sff": gfpoly_factor_sff,
     "gfpoly_factor_ddf": gfpoly_factor_ddf,
-    "gfpoly_factor_edf": gfpoly_factor_edf
+    "gfpoly_factor_edf": gfpoly_factor_edf,
+    "gcm_crack": gcm_crack
 }
 
 

@@ -142,11 +142,7 @@ class FieldElement:
    
     @staticmethod
     def gcm_from_block(block):
-        """
-        Wandelt einen 16-Byte-Block (als Bytes) direkt in ein FieldElement für die GCM-Semantik um.
-        """
-        if len(block) != 16:
-            raise ValueError("GCM-Blöcke müssen genau 16 Bytes lang sein.")
+       
         int_value = int.from_bytes(reverse_bit_order(block), byteorder='little')
         return FieldElement(int_value)
 

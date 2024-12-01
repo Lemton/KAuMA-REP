@@ -184,7 +184,7 @@ class PolyFieldElement:
     
         
     def gcd(a, b):
-
+        
         while not b.is_zero():
             if b.coefficients[-1] == FieldElement(0):
                 raise ValueError("Leading coefficient of divisor is zero during GCD computation.")
