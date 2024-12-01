@@ -278,13 +278,10 @@ def gfpoly_factor_edf(arguments):
     factors = edf(poly_f, poly_f_degree)
 
     return {
-        "factors": [
-            {
-                "factor": [
-                    encode_base64(FieldElement.gcm_to_block(coeff.value))
-                    for coeff in factor.coefficients
-                ],
-            }
-            for factor in factors
-        ]
+        "factors":
+            [
+                 [encode_base64(FieldElement.gcm_to_block(coeff.value)) for coeff in poly.coefficients] for poly in factors
+            ]
+          
+       
     }
