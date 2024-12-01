@@ -1,4 +1,3 @@
-import binascii
 from utils.bitops import reverse_bit_order
 import base64
 
@@ -136,7 +135,7 @@ class FieldElement:
     
     def __repr__(self):
         # Assuming the value is an integer; adjust if your implementation differs
-        return f"FieldElement({base64.b64encode((self.value.to_bytes(16, byteorder="big")))}))"
+        return f"FieldElement({base64.b64encode((self.value.to_bytes(16, byteorder='big')))}))"
 
 
    

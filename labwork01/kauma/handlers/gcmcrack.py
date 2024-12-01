@@ -62,7 +62,7 @@ def random_poly(max_deg):
     rand_poly = []
     deg = random.randint(1, max_deg-1)
     for i in range (deg):
-        poly = FieldElement(random.randint(1, (2**128)//2))
+        poly = FieldElement(random.randint(1, (2**128)))
         rand_poly.append(poly)
     
     return PolyFieldElement(rand_poly)
