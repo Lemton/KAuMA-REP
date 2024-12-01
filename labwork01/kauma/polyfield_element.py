@@ -41,6 +41,8 @@ class PolyFieldElement:
         return quotient
 
     def __pow__(self, exponent):
+        
+        
         if exponent < 0:
             raise ValueError("Exponent must be non-negative")
         if exponent == 0:
@@ -49,7 +51,7 @@ class PolyFieldElement:
             return self
 
         result = PolyFieldElement([FieldElement(1)])
-        base = self
+        base = self.copy()
 
         while exponent:
             if exponent & 1:  # Prüfe das niedrigstwertige Bit
@@ -116,7 +118,7 @@ class PolyFieldElement:
 
         # Startwert für das Ergebnis ist das neutrale Element (1)
         result = PolyFieldElement([FieldElement(1)])
-        base = self
+        base = self.copy()
 
         # Square-and-Multiply Algorithmus
         while exponent > 0:
@@ -192,7 +194,7 @@ class PolyFieldElement:
         return a
 
     def differentiate(self):
-        diff = copy.deepcopy(self)
+        diff = self.copy()
         result = diff.coefficients
 
         if len(diff.coefficients) == 1:
@@ -232,3 +234,8 @@ class PolyFieldElement:
         return f"PolyFieldElement(coefficients={self.coefficients})"
     
 
+    def copy(self):
+        
+        return copy.deepcopy(self)
+    
+    

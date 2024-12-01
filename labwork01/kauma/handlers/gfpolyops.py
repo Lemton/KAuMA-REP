@@ -1,6 +1,7 @@
 from field_element import FieldElement
 from polyfield_element import PolyFieldElement
 from utils.bitops import decode_base64, encode_base64
+from handlers.gcmcrack import ddf, sff, edf
 
 def gfpoly_add(arguments):
     poly_a_b64coeffs = arguments.get("A", [])
@@ -238,44 +239,52 @@ def gfpoly_factor_sff(arguments):
         ]
     }
 
-def sff(f):
-        """
-        Implementiert den Square-Free Factorization Algorithmus (SFF) im Galois-Feld GF(2^m).
-        """
-        # Berechne c = gcd(f, f')
-        f_prime = f.differentiate()
-        
-        c = PolyFieldElement.gcd(f, f_prime)
-        # f ← f / c
-        
-        f = f // c
-        
-        # Initialisiere z ← ∅ und e ← 1
-        z = []
-        e = 1
-        
-        # while f ≠ 1 do
-        while not f.is_one():
-            
-            # y ← gcd(f, c)
-            y = PolyFieldElement.gcd(f, c)
-            # if f ≠ y then
-            if f != y:
-                # z ← z ∪ {(f / y, e)}
-                z.append((f // y, e))
-            # f ← y
-            f = y
-            # c ← c / y
-            c = c // y
-            # e ← e + 1
-            e += 1
+def gfpoly_factor_ddf(arguments):
+    poly_f_b64coeffs = arguments.get("F")
 
-        
-        # if c ≠ 1 then
-        if not c.is_one():
-            for f_star, e_star in sff(c.sqrt()):
-                # z ← z ∪ {(f*, 2e*)}
-                z.append((f_star, e_star*2))
+    # Umwandlung der Koeffizienten von Base64 zu FieldElementen
+    f_coeffs = [FieldElement.gcm_from_block(decode_base64(f)) for f in poly_f_b64coeffs]
 
-        # return z
-        return sorted(z)
+    # Erstellung des PolyFieldElements
+    poly_f = PolyFieldElement(f_coeffs)
+    
+    # Square-Free Factorization durchführen
+    factors = ddf(poly_f)
+
+    return {
+        "factors": [
+            {
+                "factor": [
+                    encode_base64(FieldElement.gcm_to_block(coeff.value))
+                    for coeff in factor.coefficients
+                ],
+                "degree": degree
+            }
+            for factor, degree in factors
+        ]
+    }
+
+def gfpoly_factor_edf(arguments):
+    poly_f_b64coeffs = arguments.get("F")
+    poly_f_degree = arguments.get("d")
+
+    # Umwandlung der Koeffizienten von Base64 zu FieldElementen
+    f_coeffs = [FieldElement.gcm_from_block(decode_base64(f)) for f in poly_f_b64coeffs]
+
+    # Erstellung des PolyFieldElements
+    poly_f = PolyFieldElement(f_coeffs)
+    
+    # Square-Free Factorization durchführen
+    factors = edf(poly_f, poly_f_degree)
+
+    return {
+        "factors": [
+            {
+                "factor": [
+                    encode_base64(FieldElement.gcm_to_block(coeff.value))
+                    for coeff in factor.coefficients
+                ],
+            }
+            for factor in factors
+        ]
+    }

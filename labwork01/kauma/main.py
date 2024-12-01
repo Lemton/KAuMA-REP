@@ -10,6 +10,7 @@ from handlers.gcm import GCMHandler
 from handlers.padding_attack import decrypt_ciphertext
 from handlers.gfpolyops import *
 
+
 sea128 = SEA128Handler()
 xex = FDEHandler()
 gcm = GCMHandler()
@@ -35,6 +36,8 @@ ACTION_MAP = {
     "gfpoly_sqrt": gfpoly_sqrt,
     "gfpoly_diff": gfpoly_diff,
     "gfpoly_factor_sff": gfpoly_factor_sff,
+    "gfpoly_factor_ddf": gfpoly_factor_ddf,
+    "gfpoly_factor_edf": gfpoly_factor_edf
 }
 
 
